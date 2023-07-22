@@ -1,11 +1,16 @@
 package protobuf.magic;
 
-public class App {
-  public String getGreeting() {
-    return "Hello World!";
-  }
+import burp.api.montoya.BurpExtension;
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.logging.Logging;
 
-  public static void main(String[] args) {
-    System.out.println(new App().getGreeting());
+public class App implements BurpExtension {
+  @Override
+  public void initialize(MontoyaApi api) {
+    api.extension().setName("Protobuf Magic");
+
+    Logging logging = api.logging();
+
+    logging.logToOutput("Hello output.");
   }
 }
