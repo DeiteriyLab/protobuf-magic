@@ -17,12 +17,11 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.4.0")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
     implementation("net.portswigger.burp.extensions:montoya-api:2023.1")
 }
