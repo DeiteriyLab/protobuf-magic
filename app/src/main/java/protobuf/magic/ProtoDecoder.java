@@ -1,27 +1,15 @@
 package protobuf.magic;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import protobuf.magic.Part;
 
 public class ProtoDecoder {
   private static final int VARINT = 0;
   private static final int FIXED64 = 1;
   private static final int LENDELIM = 2;
   private static final int FIXED32 = 5;
-
-  public static class Part {
-    int[] byteRange;
-    int index;
-    int type;
-    Object value;
-
-    Part(int[] byteRange, int index, int type, Object value) {
-      this.byteRange = byteRange;
-      this.index = index;
-      this.type = type;
-      this.value = value;
-    }
-  }
 
   public static class DecodeResult {
     List<Part> parts;
@@ -44,7 +32,7 @@ public class ProtoDecoder {
         reader.checkpoint();
 
         int[] byteRange = {reader.getOffset()};
-        int indexType = (int) reader.readVarInt();
+        int indexType = reader.readVarInt().intValue();
         int type = indexType & 0b111;
         int index = indexType >> 3;
 
@@ -52,8 +40,8 @@ public class ProtoDecoder {
         if (type == VARINT) {
           value = reader.readVarInt();
         } else if (type == LENDELIM) {
-          int length = (int) reader.readVarInt();
-          value = reader.readBuffer(length);
+          BigInteger length = reader.readVarInt();
+          value = reader.readBuffer(length.intValue());
         } else if (type == FIXED32) {
           value = reader.readBuffer(4);
         } else if (type == FIXED64) {
@@ -63,7 +51,7 @@ public class ProtoDecoder {
         }
 
         byteRange = appendToArray(byteRange, reader.getOffset());
-        parts.add(new Part(byteRange, index, type, value));
+        parts.add(new Part(Array.stream(byteRange), index, type, value));
       }
     } catch (RuntimeException err) {
       reader.resetToCheckpoint();

@@ -1,5 +1,6 @@
 package protobuf.magic;
 
+import java.math.BigInteger;
 
 class BufferReader {
   private final byte[] buffer;
@@ -11,10 +12,10 @@ class BufferReader {
     this.offset = 0;
   }
 
-  public long readVarInt() {
-    VarIntResult result = decodeVarint(buffer, offset);
-    offset += result.length;
-    return result.value;
+  public BigInteger readVarInt() {
+    VarIntResult result = VarintUtils.decodeVarint(buffer, offset);
+    offset += result.getLength();
+    return result.getValue();
   }
 
   public byte[] readBuffer(int length) {
@@ -58,38 +59,6 @@ class BufferReader {
 
   public void resetToCheckpoint() {
     offset = savedOffset;
-  }
-
-  private static class VarIntResult {
-    long value;
-    int length;
-
-    VarIntResult(long value, int length) {
-      this.value = value;
-      this.length = length;
-    }
-  }
-
-  private static VarIntResult decodeVarint(byte[] buffer, int offset) {
-    long result = 0;
-    int shift = 0;
-    int length = 0;
-
-    while (true) {
-      if (offset + length >= buffer.length) {
-        throw new RuntimeException("Invalid VarInt");
-      }
-
-      byte b = buffer[offset + length];
-      result |= (b & 0x7F) << shift;
-      length++;
-      if ((b & 0x80) == 0) {
-        break;
-      }
-      shift += 7;
-    }
-
-    return new VarIntResult(result, length);
   }
 
   private static int readInt32BE(byte[] buffer, int offset) {

@@ -1,9 +1,12 @@
 package protobuf.magic;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.spy;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+
 import org.junit.jupiter.api.Test;
 
 public class BufferReaderTest {
@@ -13,7 +16,7 @@ public class BufferReaderTest {
     byte[] buffer = BufferUtils.parseInput("8F01");
     BufferReader reader = new BufferReader(buffer);
 
-    long result = reader.readVarInt();
+    BigInteger result = reader.readVarInt();
     assertEquals(143, result);
 
     assertEquals(2, reader.getOffset());
