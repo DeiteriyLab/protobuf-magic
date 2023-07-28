@@ -3,14 +3,8 @@ package protobuf.magic;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import protobuf.magic.Part;
 
 public class ProtoDecoder {
-  private static final int VARINT = 0;
-  private static final int FIXED64 = 1;
-  private static final int LENDELIM = 2;
-  private static final int FIXED32 = 5;
-
   public static class DecodeResult {
     List<Part> parts;
     byte[] leftOver;
@@ -37,21 +31,21 @@ public class ProtoDecoder {
         int index = indexType >> 3;
 
         Object value;
-        if (type == VARINT) {
+        if (type == TYPES.VARINT.getValue()) {
           value = reader.readVarInt();
-        } else if (type == LENDELIM) {
+        } else if (type == TYPES.LENDELIM.getValue()) {
           BigInteger length = reader.readVarInt();
           value = reader.readBuffer(length.intValue());
-        } else if (type == FIXED32) {
+        } else if (type == TYPES.FIXED32.getValue()) {
           value = reader.readBuffer(4);
-        } else if (type == FIXED64) {
+        } else if (type == TYPES.FIXED64.getValue()) {
           value = reader.readBuffer(8);
         } else {
           throw new RuntimeException("Unknown type: " + type);
         }
 
         byteRange = appendToArray(byteRange, reader.getOffset());
-        parts.add(new Part(Array.stream(byteRange), index, type, value));
+        parts.add(new Part(byteRange, index, type, value));
       }
     } catch (RuntimeException err) {
       reader.resetToCheckpoint();
@@ -68,17 +62,18 @@ public class ProtoDecoder {
   }
 
   public static String typeToString(int type, String subType) {
-    switch (type) {
-      case VARINT:
-        return "varint";
-      case LENDELIM:
-        return subType != null ? subType : "len_delim";
-      case FIXED32:
-        return "fixed32";
-      case FIXED64:
-        return "fixed64";
-      default:
-        return "unknown";
+    if (type == TYPES.VARINT.getValue()) {
+      return "varint";
     }
+    if (type == TYPES.LENDELIM.getValue()) {
+      return subType != null ? subType : "len_delim";
+    }
+    if (type == TYPES.FIXED32.getValue()) {
+      return "fixed32";
+    }
+    if (type == TYPES.FIXED64.getValue()) {
+      return "fixed64";
+    }
+    return "unknown";
   }
 }

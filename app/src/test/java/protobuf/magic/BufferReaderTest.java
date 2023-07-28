@@ -1,84 +1,80 @@
 package protobuf.magic;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.spy;
-
-import java.lang.reflect.Field;
-import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
-public class BufferReaderTest {
+class ProtoDecoderTest {
 
   @Test
-  void testReadVarInt() {
-    byte[] buffer = BufferUtils.parseInput("8F01");
-    BufferReader reader = new BufferReader(buffer);
+  void testDecodeEmptyProto() {
+    byte[] buffer = BufferUtils.parseInput("");
+    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
-    BigInteger result = reader.readVarInt();
-    assertEquals(143, result);
-
-    assertEquals(2, reader.getOffset());
+    assertEquals(0, result.parts.size());
+    assertEquals(0, result.leftOver.length);
   }
 
   @Test
-  void testReadBuffer() {
-    byte[] buffer = BufferUtils.parseInput("AABBCCDD");
-    BufferReader reader = new BufferReader(buffer);
+  void testDecodeEmptyGrpc() {
+    byte[] buffer = BufferUtils.parseInput("00 00000000");
+    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
-    byte[] result = reader.readBuffer(3);
-    assertArrayEquals(new byte[] {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC}, result);
-
-    assertEquals(3, reader.getOffset());
+    assertEquals(0, result.parts.size());
+    assertEquals(0, result.leftOver.length);
   }
 
   @Test
-  void testTrySkipGrpcHeader() {
-    byte[] buffer = BufferUtils.parseInput("0000000000");
-    BufferReader reader = new BufferReader(buffer);
+  void testDecodeInt() {
+    byte[] buffer = BufferUtils.parseInput("089601");
+    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
-    reader.trySkipGrpcHeader();
-
-    assertEquals(5, reader.getOffset());
+    assertEquals(1, result.parts.size());
+    Part part = result.parts.get(0);
+    assertEquals(TYPES.VARINT.getValue(), part.type);
+    assertEquals(1, part.index);
+    assertEquals("150", part.value.toString());
+    assertEquals(0, part.byteRange[0]);
+    assertEquals(3, part.byteRange[1]);
+    assertEquals(0, result.leftOver.length);
   }
 
   @Test
-  void testLeftBytes() {
-    byte[] buffer = BufferUtils.parseInput("AABBCC");
-    BufferReader reader = new BufferReader(buffer);
+  void testDecodeString() {
+    byte[] buffer = BufferUtils.parseInput("12 07 74 65 73 74 69 6e 67");
+    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
-    int leftBytes = reader.leftBytes();
-    assertEquals(3, leftBytes);
+    assertEquals(1, result.parts.size());
+    Part part = result.parts.get(0);
+    assertEquals(TYPES.LENDELIM.getValue(), part.type);
+    assertEquals(2, part.index);
+    assertEquals("testing", new String((byte[]) part.value));
+    assertEquals(0, part.byteRange[0]);
+    assertEquals(9, part.byteRange[1]);
+    assertEquals(0, result.leftOver.length);
   }
 
   @Test
-  void testCheckpointAndResetToCheckpoint() {
-    byte[] buffer = BufferUtils.parseInput("AABBCC");
-    BufferReader reader = new BufferReader(buffer);
+  void testDecodeIntAndString() {
+    byte[] buffer = BufferUtils.parseInput("08 96 01 12 07 74 65 73 74 69 6e 67");
+    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
-    reader.checkpoint();
-    reader.readBuffer(2);
+    assertEquals(2, result.parts.size());
 
-    assertEquals(2, reader.getOffset());
+    Part part1 = result.parts.get(0);
+    assertEquals(TYPES.VARINT.getValue(), part1.type);
+    assertEquals(1, part1.index);
+    assertEquals("150", part1.value.toString());
+    assertEquals(0, part1.byteRange[0]);
+    assertEquals(3, part1.byteRange[1]);
 
-    reader.resetToCheckpoint();
+    Part part2 = result.parts.get(1);
+    assertEquals(TYPES.LENDELIM.getValue(), part2.type);
+    assertEquals(2, part2.index);
+    assertEquals("testing", new String((byte[]) part2.value));
+    assertEquals(3, part2.byteRange[0]);
+    assertEquals(12, part2.byteRange[1]);
 
-    assertEquals(0, reader.getOffset());
-  }
-
-  @Test
-  void testGetOffsetWithSpy() throws Exception {
-    byte[] buffer = BufferUtils.parseInput("AABBCC");
-    BufferReader reader = spy(new BufferReader(buffer));
-
-    int offset = reader.getOffset();
-
-    // Access the private field 'offset' using reflection
-    Field offsetField = BufferReader.class.getDeclaredField("offset");
-    offsetField.setAccessible(true);
-    int privateOffset = (int) offsetField.get(reader);
-
-    assertEquals(privateOffset, offset);
+    assertEquals(0, result.leftOver.length);
   }
 }

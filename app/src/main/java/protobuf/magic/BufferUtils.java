@@ -53,11 +53,4 @@ public class BufferUtils {
     }
     return data;
   }
-
-  public static void main(String[] args) {
-    String input = "0x48656c6c6f20576f726c64";
-    byte[] buffer = parseInput(input);
-    System.out.println(bufferToPrettyHex(buffer)); // Output: "48 65 6c 6c 6f 20 57 6f 72 6c 64"
-    System.out.println(bufferLeToBeHex(buffer)); // Output: "646c726f20576f72"
-  }
 }

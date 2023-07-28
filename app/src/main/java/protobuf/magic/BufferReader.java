@@ -29,6 +29,9 @@ class BufferReader {
   public void trySkipGrpcHeader() {
     int backupOffset = offset;
 
+    if(buffer.length <= offset) {
+      return;
+    }
     if (buffer[offset] == 0 && leftBytes() >= 5) {
       offset++;
       int length = readInt32BE(buffer, offset);
