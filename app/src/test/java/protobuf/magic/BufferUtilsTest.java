@@ -38,9 +38,9 @@ public class BufferUtilsTest {
   }
 
   @Test
-  void testBufferLeToBeHex() {
+  void testBufferToHex() {
     byte[] input = {(byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0xAA};
-    String result = BufferUtils.bufferLeToBeHex(input);
+    String result = BufferUtils.bufferToHex(input);
     assertEquals("aa020100", result);
   }
 

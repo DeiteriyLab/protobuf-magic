@@ -33,7 +33,7 @@ public class BufferUtils {
     return output.toString();
   }
 
-  public static String bufferLeToBeHex(byte[] buffer) {
+  public static String bufferToHex(byte[] buffer) {
     StringBuilder output = new StringBuilder();
     for (int i = buffer.length - 1; i >= 0; i--) {
       String hex = String.format("%02x", buffer[i]);
