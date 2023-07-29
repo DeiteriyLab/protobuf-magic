@@ -13,7 +13,7 @@ class BufferReader {
   }
 
   public BigInteger readVarInt() {
-    VarIntResult result = VarintUtils.decodeVarint(buffer, offset);
+    VarintResult result = VarintUtils.decodeVarint(buffer, offset);
     offset += result.getLength();
     return result.getValue();
   }
@@ -29,7 +29,7 @@ class BufferReader {
   public void trySkipGrpcHeader() {
     int backupOffset = offset;
 
-    if(buffer.length <= offset) {
+    if (buffer.length <= offset) {
       return;
     }
     if (buffer[offset] == 0 && leftBytes() >= 5) {

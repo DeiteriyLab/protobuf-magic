@@ -14,7 +14,5 @@ public class App implements BurpExtension {
     logging.logToOutput("Hello output.");
   }
 
-  public static void main(String[] args) {
-
-  }
+  public static void main(String[] args) {}
 }
