@@ -24,6 +24,7 @@ dependencies {
 
     implementation("com.google.guava:guava:31.1-jre")
     implementation("net.portswigger.burp.extensions:montoya-api:2023.1")
+    implementation("javax.xml.bind:jaxb-api:2.1")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

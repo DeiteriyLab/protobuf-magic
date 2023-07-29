@@ -1,115 +1,77 @@
 package protobuf.magic;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public class ProtoDecoderUtils {
-  public static String decodeFixed32(byte[] value) {
-    int intValue = ByteBuffer.wrap(value).getInt();
-    long uintValue = intValue & 0xFFFFFFFFL; // Convert signed int to unsigned long
-    float floatValue = ByteBuffer.wrap(value).getFloat();
+  public static Proto[] decodeFixed32(byte[] value) {
+    Proto[] result = new Proto[3];
 
-    StringBuilder result = new StringBuilder();
+    ByteBuffer bufferFloat = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    float floatValue = bufferFloat.getFloat();
+    result[2] = new Proto("Float", String.format("%.16f", floatValue));
+    ByteBuffer bufferInt = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    int intValue = bufferInt.getInt();
+    result[0] = new Proto("Int", String.valueOf(intValue));
 
-    result.append("{ type: \"Int\", value: ").append(intValue).append(" }");
-
-    if (intValue != uintValue) {
-      result.append(", { type: \"Unsigned Int\", value: ").append(uintValue).append(" }");
+    ByteBuffer bufferUint = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    long uintValue = bufferUint.getInt() & 0xffffffffL;
+    // Should not return Unsigned Int result when Int is not negative
+    if (intValue >= 0) {
+      result[1] = new Proto("Unsigned Int", null);
+    } else {
+      result[1] = new Proto("Unsigned Int", String.valueOf(uintValue));
     }
 
-    result.append(", { type: \"Float\", value: ").append(floatValue).append(" }");
-
-    return result.toString();
+    return result;
   }
 
-  public static String decodeFixed64(byte[] value) {
-    double floatValue = ByteBuffer.wrap(value).getDouble();
-    BigInteger uintValue = new BigInteger(bufferLeToBeHex(value), 16);
-    BigInteger intValue = twoComplements(uintValue);
+  public static Proto[] decodeFixed64(byte[] value) {
+    ByteBuffer buffer = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    double floatValue = buffer.getDouble();
+    buffer.rewind(); // Reset the buffer position
+    long uintValue = buffer.getLong();
 
-    StringBuilder result = new StringBuilder();
-
-    result.append("{ type: \"Int\", value: ").append(intValue).append(" }");
-
-    if (!intValue.equals(uintValue)) {
-      result.append(", { type: \"Unsigned Int\", value: ").append(uintValue).append(" }");
+    Proto[] result = new Proto[3];
+    result[0] = new Proto("Int", String.valueOf(uintValue));
+    // Check if uintValue is negative. If not, set unsigned integer to null.
+    if (uintValue >= 0) {
+      result[1] = new Proto("Unsigned Int", null);
+    } else {
+      result[1] = new Proto("Unsigned Int", Long.toUnsignedString(uintValue));
     }
+    result[2] = new Proto("Double", String.valueOf(floatValue));
 
-    result.append(", { type: \"Double\", value: ").append(floatValue).append(" }");
-
-    return result.toString();
+    return result;
   }
 
-  public static String decodeVarintParts(String value) {
-    BigInteger intVal = new BigInteger(value);
-    StringBuilder result = new StringBuilder();
+  public static Proto[] decodeVarintParts(byte[] value) {
+    ByteBuffer buffer = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    int rawValue = buffer.getInt();
 
-    result.append("{ type: \"Int\", value: ").append(intVal).append(" }");
+    // ZigZag decoding
+    int signedValue = (rawValue >> 1) ^ (-(rawValue & 1));
 
-    BigInteger signedIntVal = interpretAsSignedType(intVal);
-    if (!signedIntVal.equals(intVal)) {
-      result.append(", { type: \"Signed Int\", value: ").append(signedIntVal).append(" }");
-    }
+    Proto[] result = new Proto[2];
+    result[0] = new Proto("Int", String.valueOf(rawValue));
+    result[1] = new Proto("Signed Int", String.valueOf(signedValue));
 
-    return result.toString();
+    return result;
   }
 
-  public static String decodeStringOrBytes(byte[] value) {
+  public static Proto decodeStringOrBytes(byte[] value) {
     if (value.length == 0) {
-      return "{ type: \"string|bytes\", value: \"\" }";
+      return new Proto("String|Bytes", "");
     }
+    String textValue = new String(value, StandardCharsets.UTF_8);
 
-    try {
-      String decodedString = new String(value, StandardCharsets.UTF_8);
-      return "{ type: \"string\", value: \"" + decodedString + "\" }";
-    } catch (Exception e) {
-      String prettyHex = bufferToPrettyHex(value);
-      return "{ type: \"bytes\", value: \"" + prettyHex + "\" }";
-    }
-  }
-
-  private static String bufferToPrettyHex(byte[] buffer) {
-    StringBuilder output = new StringBuilder();
-    for (byte v : buffer) {
-      if (output.length() > 0) {
-        output.append(" ");
-      }
-
-      String hex = String.format("%02x", v & 0xFF);
-      output.append(hex);
-    }
-    return output.toString();
-  }
-
-  private static String bufferLeToBeHex(byte[] buffer) {
-    StringBuilder output = new StringBuilder();
-    for (int i = buffer.length - 1; i >= 0; i--) {
-      String hex = String.format("%02x", buffer[i] & 0xFF);
-      output.append(hex);
-    }
-    return output.toString();
-  }
-
-  private static BigInteger twoComplements(BigInteger uintValue) {
-    BigInteger maxLong = new BigInteger("7fffffffffffffff", 16);
-    BigInteger longForComplement = new BigInteger("10000000000000000", 16);
-
-    if (uintValue.compareTo(maxLong) > 0) {
-      return uintValue.subtract(longForComplement);
+    // Check if the textValue contains the Unicode replacement character
+    if (textValue.contains("\uFFFD")) {
+      // Return a Proto object with type "Bytes" and value "Byte representation"
+      return new Proto("Bytes", "Byte representation");
     } else {
-      return uintValue;
-    }
-  }
-
-  private static BigInteger interpretAsSignedType(BigInteger value) {
-    BigInteger maxLong = new BigInteger("7fffffffffffffff", 16);
-
-    if (value.compareTo(maxLong) > 0) {
-      BigInteger mask = new BigInteger("FFFFFFFFFFFFFFFF", 16);
-      return value.and(mask);
-    } else {
-      return value;
+      return new Proto("String", textValue);
     }
   }
 }
