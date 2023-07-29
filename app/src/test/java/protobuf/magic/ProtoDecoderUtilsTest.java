@@ -14,7 +14,6 @@ public class ProtoDecoderUtilsTest {
   public void decodeFixed32() {
     ByteBuffer buf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
     buf.putInt(0xA4709D3F);
-    buf.flip(); // reset the position of ByteBuffer to the start
     assertEquals("1.2300000190734863", ProtoDecoderUtils.decodeFixed32(buf.array())[2].getValue());
 
     Proto[] result =
