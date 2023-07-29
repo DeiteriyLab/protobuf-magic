@@ -18,4 +18,12 @@ public class VarintResult {
   public int getLength() {
     return length;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    VarintResult that = (VarintResult) o;
+    return value.equals(that.value) && length == that.length;
+  }
 }
