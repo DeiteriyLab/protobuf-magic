@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
-
 import org.junit.jupiter.api.Test;
 
 class VarintUtilsTest {
@@ -15,10 +14,12 @@ class VarintUtilsTest {
     String input = "AC 02";
     byte[] buffer = BufferUtils.parseInput(input);
     VarintResult expectedOutput1 = new VarintResult(BigInteger.valueOf(300), 2);
-    assertTrue(expectedOutput1.equals(VarintUtils.decodeVarint(buffer, 0)), "Compare buffer1 and buffer2");
+    assertTrue(
+        expectedOutput1.equals(VarintUtils.decodeVarint(buffer, 0)), "Compare buffer1 and buffer2");
 
     VarintResult expectedOutput2 = new VarintResult(BigInteger.valueOf(2), 1);
-    assertTrue(expectedOutput2.equals(VarintUtils.decodeVarint(buffer, 1)), "Compare buffer1 and buffer2");
+    assertTrue(
+        expectedOutput2.equals(VarintUtils.decodeVarint(buffer, 1)), "Compare buffer1 and buffer2");
 
     String input2 = "AC AC";
     byte[] buffer2 = BufferUtils.parseInput(input2);
