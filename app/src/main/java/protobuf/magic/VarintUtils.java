@@ -7,32 +7,32 @@ public class VarintUtils {
   private static final BigInteger BIGINT_2 = BigInteger.valueOf(2);
 
   public static BigInteger interpretAsSignedType(BigInteger n) {
-    boolean isEven = n.testBit(0);
+    boolean isEven = n.and(BigInteger.ONE).equals(BigInteger.ZERO);
     if (isEven) {
       return n.divide(BIGINT_2);
     } else {
-      return BIGINT_2.multiply(n.add(BIGINT_1)).divide(BIGINT_2).negate();
+      return n.add(BIGINT_1).divide(BIGINT_2).multiply(BigInteger.valueOf(-1));
     }
   }
 
-  public static VarIntResult decodeVarint(byte[] buffer, int offset) {
+  public static VarintResult decodeVarint(byte[] buffer, int offset) {
     BigInteger res = BigInteger.ZERO;
     int shift = 0;
-    int b;
+    int byteValue;
 
     do {
       if (offset >= buffer.length) {
-        throw new IndexOutOfBoundsException("Index out of bounds decoding varint");
+        throw new IndexOutOfBoundsException("Index out of bound decoding varint");
       }
 
-      b = buffer[offset++];
+      byteValue = buffer[offset++] & 0xFF;
+
       BigInteger multiplier = BIGINT_2.pow(shift);
-      BigInteger thisByteValue = BigInteger.valueOf(b & 0x7F).multiply(multiplier);
+      BigInteger thisByteValue = BigInteger.valueOf(byteValue & 0x7F).multiply(multiplier);
       shift += 7;
       res = res.add(thisByteValue);
-    } while (b >= 0x80);
+    } while (byteValue >= 0x80);
 
-    return new VarIntResult(res, shift / 7);
+    return new VarintResult(res, shift / 7);
   }
-
 }

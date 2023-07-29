@@ -5,16 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProtoDecoder {
-  public static class DecodeResult {
-    List<Part> parts;
-    byte[] leftOver;
-
-    DecodeResult(List<Part> parts, byte[] leftOver) {
-      this.parts = parts;
-      this.leftOver = leftOver;
-    }
-  }
-
   public static DecodeResult decodeProto(byte[] buffer) {
     BufferReader reader = new BufferReader(buffer);
     List<Part> parts = new ArrayList<>();

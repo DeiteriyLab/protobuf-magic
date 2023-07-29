@@ -9,7 +9,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeEmptyProto() {
     byte[] buffer = BufferUtils.parseInput("");
-    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
+    DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
     assertEquals(0, result.parts.size());
     assertEquals(0, result.leftOver.length);
@@ -18,7 +18,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeEmptyGrpc() {
     byte[] buffer = BufferUtils.parseInput("00 00000000");
-    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
+    DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
     assertEquals(0, result.parts.size());
     assertEquals(0, result.leftOver.length);
@@ -27,7 +27,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeInt() {
     byte[] buffer = BufferUtils.parseInput("089601");
-    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
+    DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
     assertEquals(1, result.parts.size());
     Part part = result.parts.get(0);
@@ -42,7 +42,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeString() {
     byte[] buffer = BufferUtils.parseInput("12 07 74 65 73 74 69 6e 67");
-    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
+    DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
     assertEquals(1, result.parts.size());
     Part part = result.parts.get(0);
@@ -57,7 +57,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeIntAndString() {
     byte[] buffer = BufferUtils.parseInput("08 96 01 12 07 74 65 73 74 69 6e 67");
-    ProtoDecoder.DecodeResult result = ProtoDecoder.decodeProto(buffer);
+    DecodeResult result = ProtoDecoder.decodeProto(buffer);
 
     assertEquals(2, result.parts.size());
 
