@@ -20,22 +20,22 @@ public class ProtoDecoder {
         int type = indexType & 0b111;
         int index = indexType >> 3;
 
-        Object value;
+        String value;
         if (type == TYPES.VARINT.getValue()) {
-          value = reader.readVarInt();
+          value = reader.readVarInt().toString();
         } else if (type == TYPES.LENDELIM.getValue()) {
           BigInteger length = reader.readVarInt();
-          value = reader.readBuffer(length.intValue());
+          value = new String(reader.readBuffer(length.intValue()));
         } else if (type == TYPES.FIXED32.getValue()) {
-          value = reader.readBuffer(4);
+          value = new String(reader.readBuffer(4));
         } else if (type == TYPES.FIXED64.getValue()) {
-          value = reader.readBuffer(8);
+          value = new String(reader.readBuffer(8));
         } else {
           throw new RuntimeException("Unknown type: " + type);
         }
 
         byteRange = appendToArray(byteRange, reader.getOffset());
-        parts.add(new Part(byteRange, index, type, value));
+        parts.add(new Part(byteRange, index, new Protobuf(TYPES.fromValue(type), value)));
       }
     } catch (RuntimeException err) {
       reader.resetToCheckpoint();

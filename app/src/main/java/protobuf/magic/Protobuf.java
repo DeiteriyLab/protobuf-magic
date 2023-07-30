@@ -1,15 +1,15 @@
 package protobuf.magic;
 
-public class Proto {
-  final String type;
+public class Protobuf {
+  final TYPES type;
   final String value;
 
-  public Proto(String type, String value) {
+  public Protobuf(TYPES type, String value) {
     this.type = type;
     this.value = value;
   }
 
-  public String getType() {
+  public TYPES getType() {
     return type;
   }
 

@@ -31,11 +31,11 @@ class ProtoDecoderTest {
 
     assertEquals(1, result.parts.size());
     Part part = result.parts.get(0);
-    assertEquals(TYPES.VARINT.getValue(), part.type);
-    assertEquals(1, part.index);
-    assertEquals("150", part.value.toString());
-    assertEquals(0, part.byteRange[0]);
-    assertEquals(3, part.byteRange[1]);
+    assertEquals(TYPES.VARINT, part.getType());
+    assertEquals(1, part.getIndex());
+    assertEquals("150", part.getValue());
+    assertEquals(0, part.getByteRange()[0]);
+    assertEquals(3, part.getByteRange()[1]);
     assertEquals(0, result.leftOver.length);
   }
 
@@ -46,11 +46,11 @@ class ProtoDecoderTest {
 
     assertEquals(1, result.parts.size());
     Part part = result.parts.get(0);
-    assertEquals(TYPES.LENDELIM.getValue(), part.type);
-    assertEquals(2, part.index);
-    assertEquals("testing", new String((byte[]) part.value));
-    assertEquals(0, part.byteRange[0]);
-    assertEquals(9, part.byteRange[1]);
+    assertEquals(TYPES.LENDELIM, part.getType());
+    assertEquals(2, part.getIndex());
+    assertEquals("testing", part.getValue());
+    assertEquals(0, part.getByteRange()[0]);
+    assertEquals(9, part.getByteRange()[1]);
     assertEquals(0, result.leftOver.length);
   }
 
@@ -62,18 +62,18 @@ class ProtoDecoderTest {
     assertEquals(2, result.parts.size());
 
     Part part1 = result.parts.get(0);
-    assertEquals(TYPES.VARINT.getValue(), part1.type);
-    assertEquals(1, part1.index);
-    assertEquals("150", part1.value.toString());
-    assertEquals(0, part1.byteRange[0]);
-    assertEquals(3, part1.byteRange[1]);
+    assertEquals(TYPES.VARINT, part1.getType());
+    assertEquals(1, part1.getIndex());
+    assertEquals("150", part1.getValue());
+    assertEquals(0, part1.getByteRange()[0]);
+    assertEquals(3, part1.getByteRange()[1]);
 
     Part part2 = result.parts.get(1);
-    assertEquals(TYPES.LENDELIM.getValue(), part2.type);
-    assertEquals(2, part2.index);
-    assertEquals("testing", new String((byte[]) part2.value));
-    assertEquals(3, part2.byteRange[0]);
-    assertEquals(12, part2.byteRange[1]);
+    assertEquals(TYPES.LENDELIM, part2.getType());
+    assertEquals(2, part2.getIndex());
+    assertEquals("testing", part2.getValue());
+    assertEquals(3, part2.getByteRange()[0]);
+    assertEquals(12, part2.getByteRange()[1]);
 
     assertEquals(0, result.leftOver.length);
   }
