@@ -1,10 +1,8 @@
 package protobuf.magic;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
@@ -12,60 +10,39 @@ public class ProtoDecoderUtilsTest {
 
   @Test
   public void decodeFixed32() {
-    ByteBuffer buf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
-    buf.putInt(0xA4709D3F);
-    assertEquals("1.2300000190734863", ProtoDecoderUtils.decodeFixed32(buf.array())[2].getValue());
+    byte[] buf = BufferUtils.parseInput("A4709D3F");
+    assertEquals("1.2300000190734863", ProtoDecoderUtils.decodeFixed32(buf)[2].getValue());
 
-    Proto[] result =
-        ProtoDecoderUtils.decodeFixed32(
-            ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(0x00943577).array());
+    Proto[] result = ProtoDecoderUtils.decodeFixed32(BufferUtils.parseInput("00943577"));
     assertEquals("2000000000", result[0].getValue());
     assertEquals(null, result[1].getValue());
 
-    result =
-        ProtoDecoderUtils.decodeFixed32(
-            ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(0x006CCA88).array());
+    result = ProtoDecoderUtils.decodeFixed32(BufferUtils.parseInput("006CCA88"));
     assertEquals(-2000000000, Integer.parseInt(result[0].getValue()));
     assertEquals(2294967296L, Long.parseLong(result[1].getValue()));
   }
 
   @Test
   public void decodeFixed64() {
-    assertEquals(
-        "1.23",
-        ProtoDecoderUtils.decodeFixed64(
-            ByteBuffer.allocate(8)
-                .order(ByteOrder.BIG_ENDIAN)
-                .putLong(0xAE47E17A14AEF33FL)
-                .array())[2]
-            .getValue());
+    byte[] buf = BufferUtils.parseInput("AE47E17A14AEF33F");
+    assertEquals("1.23", ProtoDecoderUtils.decodeFixed64(buf)[2].getValue());
 
-    Proto[] result =
-        ProtoDecoderUtils.decodeFixed64(
-            ByteBuffer.allocate(8)
-                .order(ByteOrder.BIG_ENDIAN)
-                .putLong(0x000084E2506CE67CL)
-                .array());
+    buf = BufferUtils.parseInput("000084E2506CE67C");
+    Proto[] result = ProtoDecoderUtils.decodeFixed64(buf);
     assertEquals("9000000000000000000", result[0].getValue());
     assertEquals(null, result[1].getValue());
 
-    result =
-        ProtoDecoderUtils.decodeFixed64(
-            ByteBuffer.allocate(8)
-                .order(ByteOrder.BIG_ENDIAN)
-                .putLong(0x00007C1DAF931983L)
-                .array());
+    buf = BufferUtils.parseInput("00007C1DAF931983");
+    result = ProtoDecoderUtils.decodeFixed64(buf);
     assertEquals("-9000000000000000000", result[0].getValue());
     assertEquals("9446744073709551616", result[1].getValue());
   }
 
   @Test
   public void decodeVarintParts() {
-    Proto[] result =
-        ProtoDecoderUtils.decodeVarintParts(
-            ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(1642911).array());
-    assertEquals(1642911, Integer.parseInt(result[0].getValue()));
-    assertEquals(-821456, Integer.parseInt(result[1].getValue()));
+    Proto[] result = ProtoDecoderUtils.decodeVarintParts(new BigInteger("1642911"));
+    assertEquals("1642911", result[0].getValue());
+    assertEquals("-821456", result[1].getValue());
   }
 
   @Test

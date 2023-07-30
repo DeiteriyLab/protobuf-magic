@@ -1,5 +1,6 @@
 package protobuf.magic;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -46,9 +47,8 @@ public class ProtoDecoderUtils {
     return result;
   }
 
-  public static Proto[] decodeVarintParts(byte[] value) {
-    ByteBuffer buffer = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
-    int rawValue = buffer.getInt();
+  public static Proto[] decodeVarintParts(BigInteger value) {
+    int rawValue = value.intValue(); // Get the integer value from BigInteger
 
     // ZigZag decoding
     int signedValue = (rawValue >> 1) ^ (-(rawValue & 1));
