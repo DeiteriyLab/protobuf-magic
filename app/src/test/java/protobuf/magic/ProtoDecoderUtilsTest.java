@@ -18,8 +18,8 @@ public class ProtoDecoderUtilsTest {
     assertEquals(null, result[1].getValue());
 
     result = ProtoDecoderUtils.decodeFixed32(BufferUtils.parseInput("006CCA88"));
-    assertEquals(-2000000000, Integer.parseInt(result[0].getValue()));
-    assertEquals(2294967296L, Long.parseLong(result[1].getValue()));
+    assertEquals("-2000000000", result[0].getValue());
+    assertEquals("2294967296", result[1].getValue());
   }
 
   @Test
