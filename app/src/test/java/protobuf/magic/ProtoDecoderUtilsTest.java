@@ -33,11 +33,12 @@ public class ProtoDecoderUtilsTest {
   public void decodeFixed64() {
     assertEquals(
         "1.23",
-            ProtoDecoderUtils.decodeFixed64(
-                ByteBuffer.allocate(8)
-                    .order(ByteOrder.BIG_ENDIAN)
-                    .putLong(0xAE47E17A14AEF33FL)
-                    .array())[2].getValue());
+        ProtoDecoderUtils.decodeFixed64(
+            ByteBuffer.allocate(8)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putLong(0xAE47E17A14AEF33FL)
+                .array())[2]
+            .getValue());
 
     Proto[] result =
         ProtoDecoderUtils.decodeFixed64(
