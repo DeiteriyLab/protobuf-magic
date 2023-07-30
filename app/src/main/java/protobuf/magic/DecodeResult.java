@@ -21,7 +21,7 @@ public class DecodeResult {
         sb.append(part.toString()).append(", ");
       }
     }
-    sb.append(", leftOver=");
+    sb.append("leftOver=");
     if (leftOver != null) {
       for (byte b : leftOver) {
         sb.append(String.format("%02X ", b));

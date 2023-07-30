@@ -16,4 +16,9 @@ public class Protobuf {
   public String getValue() {
     return value;
   }
+
+  @Override
+  public String toString() {
+    return "Protobuf{" + "type=" + type + ", value='" + value + '\'' + "}";
+  }
 }
