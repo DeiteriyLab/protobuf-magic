@@ -1,5 +1,16 @@
 package protobuf.magic.struct;
 
+/**
+ * ProtobufFieldType enum represents different data types in Protobuf. Each Enum constant is
+ * associated with an int value and a string name. The int value represents the field number
+ * associated with the type in a Protobuf message. The String name represents the name of the data
+ * type. This enum provides a static method {@link #fromValue(int)} to convert an int value to
+ * corresponding enum type.
+ *
+ * <p>In case of expanding functionality and adding extra behaviour for specific types, it might be
+ * reasonable to split this Enum into two separate ones - for varint types and non-varint types, It
+ * helps to maintain the codebase and increases readability.
+ */
 public enum ProtobufFieldType {
   VARINT(0, "varint"),
   FIXED64(1, "fixed64"),
@@ -30,6 +41,13 @@ public enum ProtobufFieldType {
     return name;
   }
 
+  /**
+   * Returns the enum constant of this type with the specified value.
+   *
+   * @param value the field number as defined in the Protobuf message
+   * @return the enum constant with the specified value or {@code null} if no ProtobufFieldType has
+   *     this value
+   */
   public static ProtobufFieldType fromValue(int value) {
     for (ProtobufFieldType type : ProtobufFieldType.values()) {
       if (type.getValue() == value) {
