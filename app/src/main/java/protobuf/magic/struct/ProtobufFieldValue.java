@@ -1,15 +1,15 @@
-package protobuf.magic;
+package protobuf.magic.struct;
 
-public class Protobuf {
-  final TYPES type;
-  final String value;
+public class ProtobufFieldValue {
+  private final ProtobufFieldType type;
+  private final String value;
 
-  public Protobuf(TYPES type, String value) {
+  public ProtobufFieldValue(ProtobufFieldType type, String value) {
     this.type = type;
     this.value = value;
   }
 
-  public TYPES getType() {
+  public ProtobufFieldType getType() {
     return type;
   }
 

@@ -1,13 +1,13 @@
-package protobuf.magic;
+package protobuf.magic.struct;
 
 import java.util.Arrays;
 
-public class Part {
-  private int[] byteRange;
-  private int index;
-  private Protobuf protobuf;
+public class ProtobufField {
+  private final int[] byteRange;
+  private final int index;
+  private final ProtobufFieldValue protobuf;
 
-  Part(int[] byteRange, int index, Protobuf protobuf) {
+  public ProtobufField(int[] byteRange, int index, ProtobufFieldValue protobuf) {
     this.byteRange = byteRange;
     this.index = index;
     this.protobuf = protobuf;
@@ -21,11 +21,11 @@ public class Part {
     return index;
   }
 
-  public Protobuf getProtobuf() {
+  public ProtobufFieldValue getProtobuf() {
     return protobuf;
   }
 
-  public TYPES getType() {
+  public ProtobufFieldType getType() {
     return protobuf.getType();
   }
 

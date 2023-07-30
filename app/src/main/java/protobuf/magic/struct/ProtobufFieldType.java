@@ -1,6 +1,6 @@
-package protobuf.magic;
+package protobuf.magic.struct;
 
-enum TYPES {
+public enum ProtobufFieldType {
   VARINT(0, "varint"),
   FIXED64(1, "fixed64"),
   LENDELIM(2, "len_delim"),
@@ -17,7 +17,7 @@ enum TYPES {
   private final int value;
   private final String name;
 
-  TYPES(int value, String name) {
+  ProtobufFieldType(int value, String name) {
     this.value = value;
     this.name = name;
   }
@@ -30,8 +30,8 @@ enum TYPES {
     return name;
   }
 
-  public static TYPES fromValue(int value) {
-    for (TYPES type : TYPES.values()) {
+  public static ProtobufFieldType fromValue(int value) {
+    for (ProtobufFieldType type : ProtobufFieldType.values()) {
       if (type.getValue() == value) {
         return type;
       }

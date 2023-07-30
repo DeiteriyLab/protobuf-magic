@@ -3,11 +3,15 @@ package protobuf.magic;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.struct.ProtobufField;
+import protobuf.magic.struct.ProtobufFieldType;
+import protobuf.magic.struct.ProtobufFieldValue;
 
-public class ProtoDecoder {
-  public static DecodeResult decodeProto(byte[] buffer) {
+public class ProtobufMessageDecoder {
+  public static ProtobufDecodingResult decodeProto(byte[] buffer) {
     BufferReader reader = new BufferReader(buffer);
-    List<Part> parts = new ArrayList<>();
+    List<ProtobufField> parts = new ArrayList<>();
 
     reader.trySkipGrpcHeader();
 
@@ -21,27 +25,31 @@ public class ProtoDecoder {
         int index = indexType >> 3;
 
         String value;
-        if (type == TYPES.VARINT.getValue()) {
+        if (type == ProtobufFieldType.VARINT.getValue()) {
           value = reader.readVarInt().toString();
-        } else if (type == TYPES.LENDELIM.getValue()) {
+        } else if (type == ProtobufFieldType.LENDELIM.getValue()) {
           BigInteger length = reader.readVarInt();
           value = new String(reader.readBuffer(length.intValue()));
-        } else if (type == TYPES.FIXED32.getValue()) {
+        } else if (type == ProtobufFieldType.FIXED32.getValue()) {
           value = new String(reader.readBuffer(4));
-        } else if (type == TYPES.FIXED64.getValue()) {
+        } else if (type == ProtobufFieldType.FIXED64.getValue()) {
           value = new String(reader.readBuffer(8));
         } else {
           throw new RuntimeException("Unknown type: " + type);
         }
 
         byteRange = appendToArray(byteRange, reader.getOffset());
-        parts.add(new Part(byteRange, index, new Protobuf(TYPES.fromValue(type), value)));
+        parts.add(
+            new ProtobufField(
+                byteRange,
+                index,
+                new ProtobufFieldValue(ProtobufFieldType.fromValue(type), value)));
       }
     } catch (RuntimeException err) {
       reader.resetToCheckpoint();
     }
 
-    return new DecodeResult(parts, reader.readBuffer(reader.leftBytes()));
+    return new ProtobufDecodingResult(parts, reader.readBuffer(reader.leftBytes()));
   }
 
   private static int[] appendToArray(int[] array, int value) {
@@ -52,16 +60,16 @@ public class ProtoDecoder {
   }
 
   public static String typeToString(int type, String subType) {
-    if (type == TYPES.VARINT.getValue()) {
+    if (type == ProtobufFieldType.VARINT.getValue()) {
       return "varint";
     }
-    if (type == TYPES.LENDELIM.getValue()) {
+    if (type == ProtobufFieldType.LENDELIM.getValue()) {
       return subType != null ? subType : "len_delim";
     }
-    if (type == TYPES.FIXED32.getValue()) {
+    if (type == ProtobufFieldType.FIXED32.getValue()) {
       return "fixed32";
     }
-    if (type == TYPES.FIXED64.getValue()) {
+    if (type == ProtobufFieldType.FIXED64.getValue()) {
       return "fixed64";
     }
     return "unknown";

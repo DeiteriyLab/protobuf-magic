@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
+import protobuf.magic.struct.ProtobufFieldType;
+import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtoDecoderUtilsTest {
 
@@ -13,7 +15,8 @@ public class ProtoDecoderUtilsTest {
     byte[] buf = BufferUtils.parseInput("A4709D3F");
     assertEquals("1.2300000190734863", ProtoDecoderUtils.decodeFixed32(buf)[2].getValue());
 
-    Protobuf[] result = ProtoDecoderUtils.decodeFixed32(BufferUtils.parseInput("00943577"));
+    ProtobufFieldValue[] result =
+        ProtoDecoderUtils.decodeFixed32(BufferUtils.parseInput("00943577"));
     assertEquals("2000000000", result[0].getValue());
     assertEquals(null, result[1].getValue());
 
@@ -28,7 +31,7 @@ public class ProtoDecoderUtilsTest {
     assertEquals("1.23", ProtoDecoderUtils.decodeFixed64(buf)[2].getValue());
 
     buf = BufferUtils.parseInput("000084E2506CE67C");
-    Protobuf[] result = ProtoDecoderUtils.decodeFixed64(buf);
+    ProtobufFieldValue[] result = ProtoDecoderUtils.decodeFixed64(buf);
     assertEquals("9000000000000000000", result[0].getValue());
     assertEquals(null, result[1].getValue());
 
@@ -40,22 +43,22 @@ public class ProtoDecoderUtilsTest {
 
   @Test
   public void decodeVarintParts() {
-    Protobuf[] result = ProtoDecoderUtils.decodeVarintParts(new BigInteger("1642911"));
+    ProtobufFieldValue[] result = ProtoDecoderUtils.decodeVarintParts(new BigInteger("1642911"));
     assertEquals("1642911", result[0].getValue());
     assertEquals("-821456", result[1].getValue());
   }
 
   @Test
   public void decodeStringOrBytes() {
-    Protobuf result =
+    ProtobufFieldValue result =
         ProtoDecoderUtils.decodeStringOrBytes(
             "normal ascii input".getBytes(StandardCharsets.UTF_8));
     assertEquals("normal ascii input", result.getValue());
-    assertEquals(TYPES.STRING, result.getType());
+    assertEquals(ProtobufFieldType.STRING, result.getType());
 
     result = ProtoDecoderUtils.decodeStringOrBytes(new byte[] {0, -128, -1});
     assertEquals("Byte representation", result.getValue());
-    assertEquals(TYPES.BYTES, result.getType());
+    assertEquals(ProtobufFieldType.BYTES, result.getType());
 
     result = ProtoDecoderUtils.decodeStringOrBytes(new byte[] {});
     assertEquals("", result.getValue());
