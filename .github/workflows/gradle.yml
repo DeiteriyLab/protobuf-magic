@@ -22,6 +22,7 @@ jobs:
         run: git --no-pager diff --exit-code
 
   build:
+    needs: formatting
     runs-on: ubuntu-latest
 
     steps:
