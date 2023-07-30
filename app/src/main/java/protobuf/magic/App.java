@@ -7,12 +7,12 @@ import burp.api.montoya.logging.Logging;
 public class App implements BurpExtension {
   @Override
   public void initialize(MontoyaApi api) {
-    api.extension().setName("Protobuf Magic");
-
     Logging logging = api.logging();
 
-    logging.logToOutput("Hello output.");
-  }
+    api.extension().setName("Protobuf Magic");
+    logging.logToOutput("Loaded protobuf magic");
 
-  public static void main(String[] args) {}
+    DecoderTabModel tabModel = new DecoderTabModel();
+    api.userInterface().registerSuiteTab("Protobuf Magic", DecoderTabFactory.create(api, tabModel));
+  }
 }
