@@ -12,7 +12,7 @@ class VarintUtilsTest {
   @Test
   void testDecodeVarint() {
     String input = "AC 02";
-    byte[] buffer = BufferUtils.parseInput(input);
+    byte[] buffer = EncodingUtils.parseInput(input);
     VarintResult expectedOutput1 = new VarintResult(BigInteger.valueOf(300), 2);
     assertTrue(
         expectedOutput1.equals(VarintUtils.decodeVarint(buffer, 0)), "Compare buffer1 and buffer2");
@@ -22,7 +22,7 @@ class VarintUtilsTest {
         expectedOutput2.equals(VarintUtils.decodeVarint(buffer, 1)), "Compare buffer1 and buffer2");
 
     String input2 = "AC AC";
-    byte[] buffer2 = BufferUtils.parseInput(input2);
+    byte[] buffer2 = EncodingUtils.parseInput(input2);
     assertThrows(IndexOutOfBoundsException.class, () -> VarintUtils.decodeVarint(buffer2, 1));
   }
 

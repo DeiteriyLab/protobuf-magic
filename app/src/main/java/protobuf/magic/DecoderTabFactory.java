@@ -34,7 +34,7 @@ public class DecoderTabFactory {
               void updateOutput() {
                 String input = inputArea.getText();
                 String output =
-                    ProtobufMessageDecoder.decodeProto(BufferUtils.parseInput(input)).toString();
+                    ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(input)).toString();
                 outputArea.setText(output);
               }
             });

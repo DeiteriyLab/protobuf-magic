@@ -11,7 +11,7 @@ class ProtoDecoderTest {
 
   @Test
   void testDecodeEmptyProto() {
-    byte[] buffer = BufferUtils.parseInput("");
+    byte[] buffer = EncodingUtils.parseInput("");
     ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(0, result.getProtobufFields().size());
@@ -20,7 +20,7 @@ class ProtoDecoderTest {
 
   @Test
   void testDecodeEmptyGrpc() {
-    byte[] buffer = BufferUtils.parseInput("00 00000000");
+    byte[] buffer = EncodingUtils.parseInput("00 00000000");
     ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(0, result.getProtobufFields().size());
@@ -29,7 +29,7 @@ class ProtoDecoderTest {
 
   @Test
   void testDecodeInt() {
-    byte[] buffer = BufferUtils.parseInput("089601");
+    byte[] buffer = EncodingUtils.parseInput("089601");
     ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(1, result.getProtobufFields().size());
@@ -44,7 +44,7 @@ class ProtoDecoderTest {
 
   @Test
   void testDecodeString() {
-    byte[] buffer = BufferUtils.parseInput("12 07 74 65 73 74 69 6e 67");
+    byte[] buffer = EncodingUtils.parseInput("12 07 74 65 73 74 69 6e 67");
     ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(1, result.getProtobufFields().size());
@@ -59,7 +59,7 @@ class ProtoDecoderTest {
 
   @Test
   void testDecodeIntAndString() {
-    byte[] buffer = BufferUtils.parseInput("08 96 01 12 07 74 65 73 74 69 6e 67");
+    byte[] buffer = EncodingUtils.parseInput("08 96 01 12 07 74 65 73 74 69 6e 67");
     ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(2, result.getProtobufFields().size());

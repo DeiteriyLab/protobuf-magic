@@ -3,7 +3,7 @@ package protobuf.magic;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BufferUtils {
+public class EncodingUtils {
   public static byte[] parseInput(String input) {
     String normalizedInput = input.replaceAll("\\s", "");
     String normalizedHexInput = normalizedInput.replaceAll("0x", "").toLowerCase();
