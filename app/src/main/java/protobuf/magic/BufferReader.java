@@ -1,8 +1,14 @@
 package protobuf.magic;
 
 import java.math.BigInteger;
+import javax.naming.InsufficientResourcesException;
 
 class BufferReader {
+  private static final int GRPC_HEADER_FLAG = 0;
+  private static final int INT32_BYTE_LENGTH = 4;
+  private static final int BYTE_SIZE_BITS = 8;
+  private static final int BYTE_MASK = 0xFF;
+
   private final byte[] buffer;
   private int offset;
   private int savedOffset;
@@ -18,7 +24,7 @@ class BufferReader {
     return result.getValue();
   }
 
-  public byte[] readBuffer(int length) {
+  public byte[] readBuffer(int length) throws InsufficientResourcesException {
     checkByte(length);
     byte[] result = new byte[length];
     System.arraycopy(buffer, offset, result, 0, length);
@@ -32,10 +38,10 @@ class BufferReader {
     if (buffer.length <= offset) {
       return;
     }
-    if (buffer[offset] == 0 && leftBytes() >= 5) {
+    if (buffer[offset] == GRPC_HEADER_FLAG && leftBytes() >= INT32_BYTE_LENGTH) {
       offset++;
       int length = readInt32BE(buffer, offset);
-      offset += 4;
+      offset += INT32_BYTE_LENGTH;
 
       if (length > leftBytes()) {
         // Something is wrong, revert
@@ -48,10 +54,10 @@ class BufferReader {
     return buffer.length - offset;
   }
 
-  private void checkByte(int length) {
+  private void checkByte(int length) throws InsufficientResourcesException {
     int bytesAvailable = leftBytes();
     if (length > bytesAvailable) {
-      throw new RuntimeException(
+      throw new InsufficientResourcesException(
           "Not enough bytes left. Requested: " + length + " left: " + bytesAvailable);
     }
   }
@@ -64,11 +70,22 @@ class BufferReader {
     offset = savedOffset;
   }
 
+  /**
+   * Reads a 32-bit signed integer from the buffer in big-endian (BE) format.
+   *
+   * @param buffer The buffer to read the integer from.
+   * @param offset The offset from which to start reading in the buffer.
+   * @return The 32-bit signed integer read from the buffer in big-endian format.
+   */
   private static int readInt32BE(byte[] buffer, int offset) {
-    return ((buffer[offset] & 0xFF) << 24)
-        | ((buffer[offset + 1] & 0xFF) << 16)
-        | ((buffer[offset + 2] & 0xFF) << 8)
-        | (buffer[offset + 3] & 0xFF);
+    final int shift24 = BYTE_SIZE_BITS * 3;
+    final int shift16 = BYTE_SIZE_BITS * 2;
+    final int shift8 = BYTE_SIZE_BITS;
+
+    return ((buffer[offset] & BYTE_MASK) << shift24)
+        | ((buffer[offset + 1] & BYTE_MASK) << shift16)
+        | ((buffer[offset + 2] & BYTE_MASK) << shift8)
+        | (buffer[offset + 3] & BYTE_MASK);
   }
 
   public int getOffset() {
