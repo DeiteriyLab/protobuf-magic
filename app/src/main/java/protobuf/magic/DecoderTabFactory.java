@@ -2,6 +2,7 @@ package protobuf.magic;
 
 import burp.api.montoya.MontoyaApi;
 import java.awt.Component;
+import javax.naming.InsufficientResourcesException;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -33,8 +34,13 @@ public class DecoderTabFactory {
 
               void updateOutput() {
                 String input = inputArea.getText();
-                String output =
-                    ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(input)).toString();
+                byte[] bytes = EncodingUtils.parseInput(input);
+                String output;
+                try {
+                  output = ProtobufMessageDecoder.decodeProto(bytes).toString();
+                } catch (InsufficientResourcesException e) {
+                  output = "Insufficient resources";
+                }
                 outputArea.setText(output);
               }
             });
