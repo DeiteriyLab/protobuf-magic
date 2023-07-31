@@ -1,23 +1,39 @@
 package protobuf.magic;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EncodingUtils {
+  private static final Pattern patternHex = Pattern.compile("^[0-9a-fA-F]+$");
+
   public static byte[] parseInput(String input) {
     String normalizedInput = input.replaceAll("\\s", "");
     String normalizedHexInput = normalizedInput.replaceAll("0x", "").toLowerCase();
     if (isHex(normalizedHexInput)) {
       return hexStringToByteArray(normalizedHexInput);
-    } else {
+    } else if (isBase64(normalizedInput)) {
       return java.util.Base64.getDecoder().decode(normalizedInput);
     }
+    return rawStringToBytes(input);
   }
 
   public static boolean isHex(String str) {
-    Pattern pattern = Pattern.compile("^[0-9a-fA-F]+$");
-    Matcher matcher = pattern.matcher(str);
+    Matcher matcher = patternHex.matcher(str);
     return matcher.matches();
+  }
+
+  public static byte[] rawStringToBytes(String str) {
+    return str.getBytes(StandardCharsets.UTF_8);
+  }
+
+  public static boolean isBase64(String str) {
+    try {
+      java.util.Base64.getDecoder().decode(str);
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
   public static String bufferToPrettyHex(byte[] buffer) {
