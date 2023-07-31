@@ -43,7 +43,7 @@ public class ProtoDecoderUtilsTest {
 
   @Test
   public void decodeVarintParts() {
-    ProtobufFieldValue[] result = ProtoDecoderUtils.decodeVarintParts(new BigInteger("1642911"));
+    ProtobufFieldValue[] result = ProtoDecoderUtils.decodeVarintParts(new BigInteger("1642911").toByteArray());
     assertEquals("1642911", result[0].getValue());
     assertEquals("-821456", result[1].getValue());
   }
