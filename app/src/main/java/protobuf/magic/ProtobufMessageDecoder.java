@@ -41,19 +41,7 @@ public class ProtobufMessageDecoder {
       int type = indexType & 0b111;
       int index = indexType >> 3;
 
-      String value;
-      if (type == ProtobufFieldType.VARINT.getValue()) {
-        value = reader.readVarInt().toString();
-      } else if (type == ProtobufFieldType.LENDELIM.getValue()) {
-        BigInteger length = reader.readVarInt();
-        value = new String(reader.readBuffer(length.intValue()));
-      } else if (type == ProtobufFieldType.FIXED32.getValue()) {
-        value = new String(reader.readBuffer(4));
-      } else if (type == ProtobufFieldType.FIXED64.getValue()) {
-        value = new String(reader.readBuffer(8));
-      } else {
-        throw new UnknownTypeException("Unknown type: " + type);
-      }
+      String value = readValueBasedOnType(reader, type);
 
       byteRange = appendToArray(byteRange, reader.getOffset());
       ProtobufFieldValue field = new ProtobufFieldValue(ProtobufFieldType.fromValue(type), value);
@@ -61,6 +49,28 @@ public class ProtobufMessageDecoder {
     }
 
     return parts;
+  }
+
+  private static String readValueBasedOnType(BufferReader reader, int type)
+      throws UnknownTypeException, InsufficientResourcesException {
+    ProtobufFieldType fieldType = ProtobufFieldType.fromValue(type);
+    if (fieldType == null) {
+      throw new UnknownTypeException("Unknown type: " + type);
+    }
+
+    switch (fieldType) {
+      case VARINT:
+        return reader.readVarInt().toString();
+      case LENDELIM:
+        BigInteger length = reader.readVarInt();
+        return new String(reader.readBuffer(length.intValue()));
+      case FIXED32:
+        return new String(reader.readBuffer(4));
+      case FIXED64:
+        return new String(reader.readBuffer(8));
+      default:
+        throw new UnknownTypeException("Unknown type: " + fieldType.getName());
+    }
   }
 
   private static int[] appendToArray(int[] array, int value) {
