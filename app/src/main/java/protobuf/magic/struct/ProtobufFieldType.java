@@ -56,4 +56,13 @@ public enum ProtobufFieldType {
     }
     return null;
   }
+
+  public static ProtobufFieldType fromName(String name) {
+    for (ProtobufFieldType type : ProtobufFieldType.values()) {
+      if (type.getName().equals(name)) {
+        return type;
+      }
+    }
+    return null;
+  }
 }
