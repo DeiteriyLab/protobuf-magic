@@ -15,12 +15,13 @@ public class ProtoDecoderUtilsTest {
     byte[] buf = EncodingUtils.parseInput("A4709D3F");
     assertEquals("1.2300000190734863", ProtoDecoderUtils.decodeFixed32(buf)[2].getValue());
 
-    ProtobufFieldValue[] result =
-        ProtoDecoderUtils.decodeFixed32(EncodingUtils.parseInput("00943577"));
+    buf = EncodingUtils.parseInput("00943577");
+    ProtobufFieldValue[] result = ProtoDecoderUtils.decodeFixed32(buf);
     assertEquals("2000000000", result[0].getValue());
     assertEquals(null, result[1].getValue());
 
-    result = ProtoDecoderUtils.decodeFixed32(EncodingUtils.parseInput("006CCA88"));
+    buf = EncodingUtils.parseInput("006CCA88");
+    result = ProtoDecoderUtils.decodeFixed32(buf);
     assertEquals("-2000000000", result[0].getValue());
     assertEquals("2294967296", result[1].getValue());
   }
