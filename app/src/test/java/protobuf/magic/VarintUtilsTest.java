@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
+import protobuf.magic.struct.VarintResult;
 
 class VarintUtilsTest {
 

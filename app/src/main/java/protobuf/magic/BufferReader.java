@@ -2,6 +2,7 @@ package protobuf.magic;
 
 import java.math.BigInteger;
 import javax.naming.InsufficientResourcesException;
+import protobuf.magic.struct.VarintResult;
 
 class BufferReader {
   private static final int GRPC_HEADER_FLAG = 0;

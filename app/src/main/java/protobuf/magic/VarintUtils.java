@@ -1,6 +1,7 @@
 package protobuf.magic;
 
 import java.math.BigInteger;
+import protobuf.magic.struct.VarintResult;
 
 public class VarintUtils {
   private static final BigInteger BIGINT_1 = BigInteger.ONE;

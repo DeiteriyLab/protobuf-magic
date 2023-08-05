@@ -1,4 +1,4 @@
-package protobuf.magic;
+package protobuf.magic.struct;
 
 import java.math.BigInteger;
 
