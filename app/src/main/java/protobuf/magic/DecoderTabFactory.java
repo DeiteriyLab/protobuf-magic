@@ -37,7 +37,8 @@ public class DecoderTabFactory {
                 byte[] bytes = EncodingUtils.parseInput(input);
                 String output;
                 try {
-                  output = ProtobufMessageDecoder.decodeProto(bytes).toString();
+                  var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
+                  output = ProtobufJsonConverter.encodeToJson(protobuf).toString();
                 } catch (InsufficientResourcesException e) {
                   output = "Insufficient resources";
                 }
