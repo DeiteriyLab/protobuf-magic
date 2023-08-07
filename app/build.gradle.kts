@@ -25,6 +25,9 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
     implementation("net.portswigger.burp.extensions:montoya-api:2023.1")
     implementation("javax.xml.bind:jaxb-api:2.1")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.googlecode.protobuf-java-format:protobuf-java-format:1.3")
+    implementation("com.google.protobuf:protobuf-java-util:3.19.4")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
