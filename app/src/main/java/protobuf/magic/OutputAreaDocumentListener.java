@@ -4,6 +4,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import protobuf.magic.struct.ProtobufDecodingResult;
 
 public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea outputArea;
@@ -24,7 +25,8 @@ public class OutputAreaDocumentListener implements DocumentListener {
     SwingUtilities.invokeLater(
         () -> {
           String output = outputArea.getText();
-          String input = "meme";
+          ProtobufDecodingResult res = ProtobufJsonConverter.decodeFromJson(output);
+          String input = ProtobufEncoder.encodeToProtobuf(res);
           inputArea.setText(input);
           isUpdating[0] = false;
         });
