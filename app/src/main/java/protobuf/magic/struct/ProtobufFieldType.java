@@ -1,14 +1,23 @@
 package protobuf.magic.struct;
 
+import protobuf.magic.exception.UnknownTypeException;
+
 /**
- * ProtobufFieldType enum represents different data types in Protobuf. Each Enum constant is
- * associated with an int value and a string name. The int value represents the field number
- * associated with the type in a Protobuf message. The String name represents the name of the data
- * type. This enum provides a static method {@link #fromValue(int)} to convert an int value to
+ * ProtobufFieldType enum represents different data types in Protobuf. Each Enum
+ * constant is
+ * associated with an int value and a string name. The int value represents the
+ * field number
+ * associated with the type in a Protobuf message. The String name represents
+ * the name of the data
+ * type. This enum provides a static method {@link #fromValue(int)} to convert
+ * an int value to
  * corresponding enum type.
  *
- * <p>In case of expanding functionality and adding extra behaviour for specific types, it might be
- * reasonable to split this Enum into two separate ones - for varint types and non-varint types, It
+ * <p>
+ * In case of expanding functionality and adding extra behaviour for specific
+ * types, it might be
+ * reasonable to split this Enum into two separate ones - for varint types and
+ * non-varint types, It
  * helps to maintain the codebase and increases readability.
  */
 public enum ProtobufFieldType {
@@ -45,24 +54,26 @@ public enum ProtobufFieldType {
    * Returns the enum constant of this type with the specified value.
    *
    * @param value the field number as defined in the Protobuf message
-   * @return the enum constant with the specified value or {@code null} if no ProtobufFieldType has
-   *     this value
+   * @return the enum constant with the specified value or {@code null} if no
+   *         ProtobufFieldType has
+   *         this value
+   * @throws UnknownTypeException
    */
-  public static ProtobufFieldType fromValue(int value) {
+  public static ProtobufFieldType fromValue(int value) throws UnknownTypeException {
     for (ProtobufFieldType type : ProtobufFieldType.values()) {
       if (type.getValue() == value) {
         return type;
       }
     }
-    return null;
+    throw new UnknownTypeException("Unknown ProtobufFieldType: " + value);
   }
 
-  public static ProtobufFieldType fromName(String name) {
+  public static ProtobufFieldType fromName(String name) throws UnknownTypeException {
     for (ProtobufFieldType type : ProtobufFieldType.values()) {
       if (type.getName().equals(name)) {
         return type;
       }
     }
-    return null;
+    throw new UnknownTypeException("Unknown ProtobufFieldType: " + name);
   }
 }
