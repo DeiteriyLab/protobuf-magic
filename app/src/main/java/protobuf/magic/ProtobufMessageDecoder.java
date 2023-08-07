@@ -81,18 +81,11 @@ public class ProtobufMessageDecoder {
   }
 
   public static String typeToString(int type, String subType) {
-    if (type == ProtobufFieldType.VARINT.getValue()) {
-      return "varint";
+    try {
+      return ProtobufFieldType.fromValue(type).getName() + (subType != null ? ":" + subType : "");
+    } catch (UnknownTypeException e) {
+      System.err.println("Unknown type: " + type); // TODO: use logger burp suite
+      return "unknown";
     }
-    if (type == ProtobufFieldType.LENDELIM.getValue()) {
-      return subType != null ? subType : "len_delim";
-    }
-    if (type == ProtobufFieldType.FIXED32.getValue()) {
-      return "fixed32";
-    }
-    if (type == ProtobufFieldType.FIXED64.getValue()) {
-      return "fixed64";
-    }
-    return "unknown";
   }
 }

@@ -2,19 +2,27 @@ package protobuf.magic;
 
 import java.util.ArrayList;
 import java.util.List;
+import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.struct.*;
 
 public class ProtobufJsonConverter {
   public static ProtobufDecodingResult decodeFromJson(String jsonString) {
     List<ProtobufField> protobufFields = new ArrayList<>();
 
-    String[] pairs = jsonString.substring(1, jsonString.length() - 2).split(",");
+    jsonString = jsonString.replaceAll("\n", "").replaceAll(" ", "");
+    String[] pairs = jsonString.substring(1, jsonString.length() - 1).split(",");
     for (String pair : pairs) {
       String[] keyValue = pair.split(":");
-      String key = keyValue[0].trim().substring(1, keyValue[0].length() - 2);
+      String key = keyValue[0].trim().substring(1, keyValue[0].length() - 1);
       String value = keyValue[1].trim().substring(1, keyValue[1].length() - 2);
 
-      ProtobufFieldType type = ProtobufFieldType.valueOf(key.toUpperCase());
+      ProtobufFieldType type;
+      try {
+        type = ProtobufFieldType.fromName(key);
+      } catch (UnknownTypeException e) {
+        System.err.println("Unknown type: " + key); // TODO: use logger burp suite
+        continue;
+      }
       ProtobufFieldValue protobufFieldValue = new ProtobufFieldValue(type, value);
 
       int[] byteRange = new int[0];
