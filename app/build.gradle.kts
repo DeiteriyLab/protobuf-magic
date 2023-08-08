@@ -28,6 +28,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.googlecode.protobuf-java-format:protobuf-java-format:1.3")
     implementation("com.google.protobuf:protobuf-java-util:3.19.4")
+    implementation("com.github.os72:protobuf-dynamic:1.0.1")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

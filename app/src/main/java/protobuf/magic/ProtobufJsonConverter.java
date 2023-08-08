@@ -11,6 +11,7 @@ public class ProtobufJsonConverter {
 
     jsonString = jsonString.replaceAll("\n", "").replaceAll(" ", "");
     String[] pairs = jsonString.substring(1, jsonString.length() - 1).split(",");
+    int index = 0;
     for (String pair : pairs) {
       String[] keyValue = pair.split(":");
       String key = keyValue[0].trim().substring(1, keyValue[0].length() - 1);
@@ -26,9 +27,8 @@ public class ProtobufJsonConverter {
       ProtobufFieldValue protobufFieldValue = new ProtobufFieldValue(type, value);
 
       int[] byteRange = new int[0];
-      int index = 0;
 
-      ProtobufField protobufField = new ProtobufField(byteRange, index, protobufFieldValue);
+      ProtobufField protobufField = new ProtobufField(byteRange, index++, protobufFieldValue);
       protobufFields.add(protobufField);
     }
 
