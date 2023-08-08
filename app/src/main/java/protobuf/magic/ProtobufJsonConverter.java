@@ -15,7 +15,7 @@ public class ProtobufJsonConverter {
     for (String pair : pairs) {
       String[] keyValue = pair.split(":");
       String key = keyValue[0].trim().substring(1, keyValue[0].length() - 1);
-      String value = keyValue[1].trim().substring(1, keyValue[1].length() - 2);
+      String value = keyValue[1].trim().substring(1, keyValue[1].length() - 1);
 
       ProtobufFieldType type;
       try {

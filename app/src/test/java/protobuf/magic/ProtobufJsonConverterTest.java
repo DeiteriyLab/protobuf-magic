@@ -15,7 +15,7 @@ public class ProtobufJsonConverterTest {
 
   @Test
   public void testDecodeFromJson() {
-    String jsonString = "{ \"INT\": \"123\", \"FLOAT\": \"321.0\", \"DOUBLE\": \"123.1\" }";
+    String jsonString = "{ \"int\": \"123\", \"float\": \"321.0\", \"double\": \"123.1\" }";
 
     ProtobufDecodingResult result = ProtobufJsonConverter.decodeFromJson(jsonString);
 
