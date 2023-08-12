@@ -21,7 +21,7 @@ public class ProtobufEncoder {
     MessageDefinition.Builder msgDefBuilder = MessageDefinition.newBuilder("DynamicSchema");
 
     for (ProtobufField field : res.getProtobufFields()) {
-      String fieldName = field.getProtobuf().getValue();
+      String fieldName = generateKey(field.getIndex());
       ProtobufFieldType fieldType = field.getType();
       msgDefBuilder.addField(
           getProtobufFieldLabel(fieldType),
@@ -58,19 +58,39 @@ public class ProtobufEncoder {
   }
 
   private static String getProtobufFieldType(ProtobufFieldType type) {
+    // double -> TYPE_DOUBLE
+    // float -> TYPE_FLOAT
+    // int32 -> TYPE_INT32
+    // int64 -> TYPE_INT64
+    // uint32 -> TYPE_UINT32
+    // uint64 -> TYPE_UINT64
+    // sint32 -> TYPE_SINT32
+    // sint64 -> TYPE_SINT64
+    // fixed32 -> TYPE_FIXED32
+    // fixed64 -> TYPE_FIXED64
+    // sfixed32 -> TYPE_SFIXED32
+    // sfixed64 -> TYPE_SFIXED64
+    // bool -> TYPE_BOOL
+    // string -> TYPE_STRING
+    // bytes -> TYPE_BYTES
+    // enum -> TYPE_ENUM
+    // message -> TYPE_MESSAGE
+    // group -> TYPE_GROUP
+
+    // TODO: add support 64 bit
     switch (type) {
       case VARINT:
         return "int32";
-      case FIXED64:
-        return "fixed64";
       case LENDELIM:
         return "string";
       case FIXED32:
         return "fixed32";
+      case FIXED64:
+        return "fixed64";
       case UINT:
         return "uint32";
       case FLOAT:
-        return "float";
+        return "float32";
       case DOUBLE:
         return "double";
       case INT:
@@ -80,29 +100,53 @@ public class ProtobufEncoder {
       case BYTES:
         return "bytes";
       case STRING:
+        return "string";
       case STRING_OR_BYTES:
-        return "string";
+        return "bytes";
       default:
-        return "string";
+        return "int32";
     }
   }
 
+  private static String generateKey(int base) {
+    return "pseudo_" + Integer.toHexString(base);
+  }
+
   public static String encodeToProtobuf(ProtobufDecodingResult res) {
+    DynamicSchema schema;
     try {
-      var schema = createDynamicSchema(res);
-      DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
-      Descriptor msgDesc = msgBuilder.getDescriptorForType();
-      for (ProtobufField field : res.getProtobufFields()) {
-        String fieldName = field.getProtobuf().getValue();
-        Object value = convertValueToProtobufType(field.getType(), field.getValue());
-        FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
-        msgBuilder.setField(fieldDesc, value);
+      schema = createDynamicSchema(res);
+    } catch (DescriptorValidationException e) {
+      throw new RuntimeException(e);
+    }
+    DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
+    Descriptor msgDesc = msgBuilder.getDescriptorForType();
+    for (ProtobufField field : res.getProtobufFields()) {
+      String fieldName = generateKey(field.getIndex());
+      Object value = convertValueToProtobufType(field.getType(), field.getValue());
+      FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
+      if(isDigit(field)) {
+        value = Integer.parseInt(value.toString());
       }
-      DynamicMessage msg = msgBuilder.build();
-      return encodeToBase64(msg);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+      msgBuilder.setField(fieldDesc, value);
+    }
+    DynamicMessage msg = msgBuilder.build();
+    return encodeToBase64(msg);
+  }
+
+  private static boolean isDigit(final ProtobufField field) {
+    switch (field.getType()) {
+      case VARINT:
+      case FIXED64:
+      case FIXED32:
+      case UINT:
+      case FLOAT:
+      case DOUBLE:
+      case INT:
+      case SINT:
+        return true;
+      default:
+        return false;
     }
   }
 
@@ -128,7 +172,7 @@ public class ProtobufEncoder {
     }
   }
 
-  private static String encodeToBase64(DynamicMessage msg) throws Exception {
+  private static String encodeToBase64(DynamicMessage msg) {
     return Base64.getEncoder().encodeToString(msg.toByteArray());
   }
 }
