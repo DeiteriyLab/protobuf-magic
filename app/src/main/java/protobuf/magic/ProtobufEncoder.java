@@ -131,7 +131,9 @@ public class ProtobufEncoder {
       msgBuilder.setField(fieldDesc, value);
     }
     DynamicMessage msg = msgBuilder.build();
-    return encodeToBase64(msg);
+    byte[] msgBytes = msg.toByteArray();
+    msgBytes = LeftOverBytesAppender.appendLeftOverBytes(res.getLenLeftOver(), msgBytes);
+    return encodeToBase64(msgBytes);
   }
 
   private static boolean isDigit(final ProtobufField field) {
@@ -172,7 +174,7 @@ public class ProtobufEncoder {
     }
   }
 
-  private static String encodeToBase64(DynamicMessage msg) {
-    return Base64.getEncoder().encodeToString(msg.toByteArray());
+  private static String encodeToBase64(byte[] msg) {
+    return Base64.getEncoder().encodeToString(msg);
   }
 }
