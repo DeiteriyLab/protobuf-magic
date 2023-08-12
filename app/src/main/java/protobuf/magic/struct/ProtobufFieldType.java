@@ -16,7 +16,7 @@ import protobuf.magic.exception.UnknownTypeException;
 public enum ProtobufFieldType {
   VARINT(0, "varint"),
   FIXED64(1, "fixed64"),
-  LENDELIM(2, "len_delim"),
+  LENDELIM(2, "string"),
   FIXED32(5, "fixed32"),
   UINT(6, "uint"),
   FLOAT(7, "float"),
