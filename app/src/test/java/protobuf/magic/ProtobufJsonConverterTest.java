@@ -12,7 +12,6 @@ import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufJsonConverterTest {
-
   @Test
   public void testDecodeFromJson() {
     String jsonString = "{ \"int\": \"123\", \"float\": \"321.0\", \"double\": \"123.1\" }";
@@ -39,7 +38,7 @@ public class ProtobufJsonConverterTest {
 
     List<ProtobufField> protobufFields =
         Arrays.asList(protobufField1, protobufField2, protobufField3);
-    ProtobufDecodingResult result = new ProtobufDecodingResult(protobufFields, new byte[0]);
+    ProtobufDecodingResult result = new ProtobufDecodingResult(protobufFields, new byte[0], 0);
 
     String jsonString = ProtobufJsonConverter.encodeToJson(result).toString();
     String normalize = jsonString.replaceAll("\n", "").replaceAll(" ", "");

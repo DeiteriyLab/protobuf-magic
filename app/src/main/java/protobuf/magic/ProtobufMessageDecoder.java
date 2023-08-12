@@ -11,6 +11,8 @@ import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufMessageDecoder {
+  static final Logger logging = new Logger(ProtobufMessageDecoder.class);
+
   public static ProtobufDecodingResult decodeProto(byte[] buffer)
       throws InsufficientResourcesException {
 
@@ -19,36 +21,28 @@ public class ProtobufMessageDecoder {
 
     reader.trySkipGrpcHeader();
 
+    int leftBytes = 0;
     try {
-      parts = processFields(reader);
+      leftBytes = reader.leftBytes();
+      while (reader.leftBytes() > 0) {
+        reader.checkpoint();
+
+        int[] byteRange = {reader.getOffset()};
+        int indexType = reader.readVarInt().intValue();
+        int type = indexType & 0b111;
+        int index = indexType >> 3;
+
+        String value = readValueBasedOnType(reader, type);
+
+        byteRange = appendToArray(byteRange, reader.getOffset());
+        ProtobufFieldValue field = new ProtobufFieldValue(ProtobufFieldType.fromValue(type), value);
+        parts.add(new ProtobufField(byteRange, index, field));
+      }
     } catch (UnknownTypeException err) {
       reader.resetToCheckpoint();
     }
 
-    return new ProtobufDecodingResult(parts, reader.readBuffer(reader.leftBytes()));
-  }
-
-  private static List<ProtobufField> processFields(BufferReader reader)
-      throws UnknownTypeException, InsufficientResourcesException {
-
-    List<ProtobufField> parts = new ArrayList<>();
-
-    while (reader.leftBytes() > 0) {
-      reader.checkpoint();
-
-      int[] byteRange = {reader.getOffset()};
-      int indexType = reader.readVarInt().intValue();
-      int type = indexType & 0b111;
-      int index = indexType >> 3;
-
-      String value = readValueBasedOnType(reader, type);
-
-      byteRange = appendToArray(byteRange, reader.getOffset());
-      ProtobufFieldValue field = new ProtobufFieldValue(ProtobufFieldType.fromValue(type), value);
-      parts.add(new ProtobufField(byteRange, index, field));
-    }
-
-    return parts;
+    return new ProtobufDecodingResult(parts, reader.readBuffer(reader.leftBytes()), leftBytes);
   }
 
   private static String readValueBasedOnType(BufferReader reader, int type)
@@ -84,7 +78,7 @@ public class ProtobufMessageDecoder {
     try {
       return ProtobufFieldType.fromValue(type).getName() + (subType != null ? ":" + subType : "");
     } catch (UnknownTypeException e) {
-      System.err.println("Unknown type: " + type); // TODO: use logger burp suite
+      logging.logToError("Unknown type: " + type);
       return "unknown";
     }
   }

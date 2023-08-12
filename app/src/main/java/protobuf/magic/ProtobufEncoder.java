@@ -8,11 +8,14 @@ import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DynamicMessage;
 import java.util.Base64;
+import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.struct.ProtobufDecodingResult;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
 
 public class ProtobufEncoder {
+  static final Logger logging = new Logger(ProtobufEncoder.class);
+
   private static DynamicSchema createDynamicSchema(ProtobufDecodingResult res)
       throws DescriptorValidationException {
     DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder();
@@ -123,9 +126,15 @@ public class ProtobufEncoder {
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
     for (ProtobufField field : res.getProtobufFields()) {
       String fieldName = generateKey(field.getIndex());
-      Object value = convertValueToProtobufType(field.getType(), field.getValue());
+      Object value;
+      try {
+        value = convertValueToProtobufType(field.getType(), field.getValue());
+      } catch (UnknownTypeException e) {
+        logging.logToError(e.toString());
+        continue;
+      }
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
-      if(isDigit(field)) {
+      if (isDigit(field)) {
         value = Integer.parseInt(value.toString());
       }
       msgBuilder.setField(fieldDesc, value);
@@ -152,11 +161,11 @@ public class ProtobufEncoder {
     }
   }
 
-  private static Object convertValueToProtobufType(ProtobufFieldType type, String value) {
+  private static Object convertValueToProtobufType(ProtobufFieldType type, String value)
+      throws UnknownTypeException {
     switch (type) {
       case VARINT:
       case FIXED64:
-      case LENDELIM:
       case FIXED32:
       case UINT:
       case FLOAT:
@@ -168,9 +177,10 @@ public class ProtobufEncoder {
         return ByteString.copyFrom(Base64.getDecoder().decode(value));
       case STRING:
       case STRING_OR_BYTES:
+      case LENDELIM:
         return value;
       default:
-        return null;
+        throw new UnknownTypeException(type.toString());
     }
   }
 

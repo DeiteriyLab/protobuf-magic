@@ -7,6 +7,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class InputAreaDocumentListener implements DocumentListener {
+  private static final Logger logging = new Logger(InputAreaDocumentListener.class);
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private final boolean[] isUpdating;
@@ -31,6 +32,7 @@ public class InputAreaDocumentListener implements DocumentListener {
             var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
             output = ProtobufJsonConverter.encodeToJson(protobuf).toString();
           } catch (InsufficientResourcesException ex) {
+            logging.logToError(ex);
             output = "Insufficient resources";
           }
           outputArea.setText(output);

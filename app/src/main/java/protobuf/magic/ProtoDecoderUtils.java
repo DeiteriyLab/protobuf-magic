@@ -50,7 +50,7 @@ public class ProtoDecoderUtils {
   }
 
   public static ProtobufFieldValue[] decodeVarintParts(BigInteger value) {
-    int rawValue = value.intValue(); // Get the integer value from BigInteger
+    int rawValue = value.intValue();
 
     // ZigZag decoding
     int signedValue = (rawValue >> 1) ^ (-(rawValue & 1));
@@ -70,8 +70,7 @@ public class ProtoDecoderUtils {
 
     // Check if the textValue contains the Unicode replacement character
     if (textValue.contains("\uFFFD")) {
-      // Return a Protobuf object with type TYPES.BYTES and value "Byte
-      // representation"
+      // Return a Protobuf object with type TYPES.BYTES and value "Byte representation"
       return new ProtobufFieldValue(ProtobufFieldType.BYTES, "Byte representation");
     } else {
       return new ProtobufFieldValue(ProtobufFieldType.STRING, textValue);
