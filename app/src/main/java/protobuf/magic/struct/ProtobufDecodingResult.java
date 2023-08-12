@@ -5,10 +5,17 @@ import java.util.List;
 public class ProtobufDecodingResult {
   private final List<ProtobufField> protobufFields;
   private final byte[] leftOver;
+  private final int lenLeftOver;
 
-  public ProtobufDecodingResult(List<ProtobufField> protobufFields, byte[] leftOver) {
+  public ProtobufDecodingResult(
+      List<ProtobufField> protobufFields, byte[] leftOver, int lenLeftOver) {
     this.protobufFields = protobufFields;
     this.leftOver = leftOver;
+    this.lenLeftOver = lenLeftOver;
+  }
+
+  public int getLenLeftOver() {
+    return lenLeftOver;
   }
 
   public List<ProtobufField> getProtobufFields() {
