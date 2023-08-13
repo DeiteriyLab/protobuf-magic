@@ -44,6 +44,7 @@ public class ProtobufJsonConverterTest {
     String normalize = jsonString.replaceAll("\n", "").replaceAll(" ", "");
 
     assertNotNull(jsonString);
-    assertEquals("{\"int\":\"123\",\"float\":\"321.0\",\"double\":\"123.1\",\"leftOver\":\"0\"}", normalize);
+    assertEquals(
+        "{\"int\":\"123\",\"float\":\"321.0\",\"double\":\"123.1\",\"leftOver\":\"0\"}", normalize);
   }
 }
