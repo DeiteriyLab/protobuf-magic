@@ -13,7 +13,7 @@ public class DecoderTabFactory {
     JTextArea inputArea = new JTextArea();
     JTextArea outputArea = new JTextArea();
 
-    final boolean[] isUpdating = {false};
+    final boolean[] isUpdating = {false}; // TODO: fix that hack
 
     inputArea
         .getDocument()
