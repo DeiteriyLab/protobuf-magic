@@ -13,7 +13,9 @@ import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor;
 import java.awt.Component;
 import java.util.Optional;
 import javax.naming.InsufficientResourcesException;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.protobuf.ProtobufEncoder;
+import protobuf.magic.protobuf.ProtobufMessageDecoder;
+import protobuf.magic.struct.Protobuf;
 
 class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
   private final Logger logging = new Logger(ProtoExtensionProvidedHttpRequestEditor.class);
@@ -34,7 +36,7 @@ class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRe
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      ProtobufDecodingResult payload = ProtobufJsonConverter.decodeFromJson(content);
+      Protobuf payload = ProtobufJsonConverter.decodeFromJson(content);
       String output = ProtobufEncoder.encodeToProtobuf(payload);
 
       request = requestResponse.request().withBody(ByteArray.byteArray(output));
@@ -54,8 +56,7 @@ class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRe
     String output;
 
     try {
-      ProtobufDecodingResult payload =
-          ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
+      Protobuf payload = ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
       output = ProtobufJsonConverter.encodeToJson(payload);
     } catch (InsufficientResourcesException e) {
       logging.logToError(e);

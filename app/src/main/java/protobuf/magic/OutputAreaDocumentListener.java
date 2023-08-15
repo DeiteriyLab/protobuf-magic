@@ -4,15 +4,15 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.protobuf.ProtobufEncoder;
+import protobuf.magic.struct.Protobuf;
 
 public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea outputArea;
   private final JTextArea inputArea;
-  private final boolean[] isUpdating;
+  private boolean isUpdating;
 
-  public OutputAreaDocumentListener(
-      JTextArea outputArea, JTextArea inputArea, boolean[] isUpdating) {
+  public OutputAreaDocumentListener(JTextArea outputArea, JTextArea inputArea, boolean isUpdating) {
     this.outputArea = outputArea;
     this.inputArea = inputArea;
     this.isUpdating = isUpdating;
@@ -20,15 +20,15 @@ public class OutputAreaDocumentListener implements DocumentListener {
 
   @Override
   public void insertUpdate(DocumentEvent e) {
-    if (isUpdating[0]) return;
-    isUpdating[0] = true;
+    if (isUpdating) return;
+    isUpdating = true;
     SwingUtilities.invokeLater(
         () -> {
           String output = outputArea.getText();
-          ProtobufDecodingResult res = ProtobufJsonConverter.decodeFromJson(output);
+          Protobuf res = ProtobufJsonConverter.decodeFromJson(output);
           String input = ProtobufEncoder.encodeToProtobuf(res);
           inputArea.setText(input);
-          isUpdating[0] = false;
+          isUpdating = false;
         });
   }
 

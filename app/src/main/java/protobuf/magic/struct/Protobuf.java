@@ -2,13 +2,12 @@ package protobuf.magic.struct;
 
 import java.util.List;
 
-public class ProtobufDecodingResult {
+public class Protobuf {
   private final List<ProtobufField> protobufFields;
   private final byte[] leftOver;
   private final int lenLeftOver;
 
-  public ProtobufDecodingResult(
-      List<ProtobufField> protobufFields, byte[] leftOver, int lenLeftOver) {
+  public Protobuf(List<ProtobufField> protobufFields, byte[] leftOver, int lenLeftOver) {
     this.protobufFields = protobufFields;
     this.leftOver = leftOver;
     this.lenLeftOver = lenLeftOver;

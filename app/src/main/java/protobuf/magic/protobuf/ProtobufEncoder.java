@@ -1,4 +1,4 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
@@ -9,14 +9,12 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DynamicMessage;
 import java.util.Base64;
 import protobuf.magic.exception.UnknownTypeException;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.struct.Protobuf;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
 
 public class ProtobufEncoder {
-  static final Logger logging = new Logger(ProtobufEncoder.class);
-
-  private static DynamicSchema createDynamicSchema(ProtobufDecodingResult res)
+  private static DynamicSchema createDynamicSchema(Protobuf res)
       throws DescriptorValidationException {
     DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder();
     schemaBuilder.setName("DynamicSchema");
@@ -115,7 +113,7 @@ public class ProtobufEncoder {
     return "pseudo_" + Integer.toHexString(base);
   }
 
-  public static String encodeToProtobuf(ProtobufDecodingResult res) {
+  public static String encodeToProtobuf(Protobuf res) {
     DynamicSchema schema;
     try {
       schema = createDynamicSchema(res);
@@ -130,7 +128,6 @@ public class ProtobufEncoder {
       try {
         value = convertValueToProtobufType(field.getType(), field.getValue());
       } catch (UnknownTypeException e) {
-        logging.logToError(e.toString());
         continue;
       }
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);

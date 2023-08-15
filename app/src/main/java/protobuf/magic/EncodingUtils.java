@@ -1,7 +1,7 @@
 package protobuf.magic;
 
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
+import java.util.Base64;
 import java.util.regex.Pattern;
 
 public class EncodingUtils {
@@ -13,14 +13,13 @@ public class EncodingUtils {
     if (isHex(normalizedHexInput)) {
       return hexStringToByteArray(normalizedHexInput);
     } else if (isBase64(normalizedInput)) {
-      return java.util.Base64.getDecoder().decode(normalizedInput);
+      return Base64.getDecoder().decode(normalizedInput);
     }
     return rawStringToBytes(input);
   }
 
   public static boolean isHex(String str) {
-    Matcher matcher = patternHex.matcher(str);
-    return matcher.matches();
+    return patternHex.matcher(str).matches();
   }
 
   public static byte[] rawStringToBytes(String str) {
@@ -29,7 +28,7 @@ public class EncodingUtils {
 
   public static boolean isBase64(String str) {
     try {
-      java.util.Base64.getDecoder().decode(str);
+      Base64.getDecoder().decode(str);
       return true;
     } catch (IllegalArgumentException e) {
       return false;

@@ -5,10 +5,10 @@ import burp.api.montoya.ui.editor.extension.EditorCreationContext;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor;
 import burp.api.montoya.ui.editor.extension.HttpRequestEditorProvider;
 
-class ProtoHttpRequestEditorProvider implements HttpRequestEditorProvider {
+class ProtobufHttpRequestEditorProvider implements HttpRequestEditorProvider {
   private final MontoyaApi api;
 
-  ProtoHttpRequestEditorProvider(MontoyaApi api) {
+  ProtobufHttpRequestEditorProvider(MontoyaApi api) {
     this.api = api;
   }
 

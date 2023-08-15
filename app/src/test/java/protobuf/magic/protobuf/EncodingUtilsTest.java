@@ -1,10 +1,12 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import protobuf.magic.EncodingUtils;
 
-public class BufferUtilsTest {
+public class EncodingUtilsTest {
 
   @Test
   void testParseLowercasedHex() {

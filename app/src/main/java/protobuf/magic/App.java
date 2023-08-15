@@ -13,9 +13,9 @@ public class App implements BurpExtension {
     api.extension().setName("Protobuf Magic");
     logging.logToOutput("Loaded protobuf magic");
 
-    DecoderTabModel tabModel = new DecoderTabModel();
-    api.userInterface().registerSuiteTab("Protobuf Magic", DecoderTabFactory.create(api, tabModel));
-    api.userInterface().registerHttpRequestEditorProvider(new ProtoHttpRequestEditorProvider(api));
+    api.userInterface().registerSuiteTab("Protobuf Magic", DecoderTabFactory.create(api));
+    api.userInterface()
+        .registerHttpRequestEditorProvider(new ProtobufHttpRequestEditorProvider(api));
     api.userInterface().registerContextMenuItemsProvider(new ProtobufContextMenuItemsProvider(api));
   }
 }

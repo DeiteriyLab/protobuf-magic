@@ -1,10 +1,11 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
+import protobuf.magic.EncodingUtils;
 import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 

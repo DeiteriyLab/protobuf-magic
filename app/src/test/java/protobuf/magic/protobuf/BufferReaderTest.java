@@ -1,10 +1,11 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.naming.InsufficientResourcesException;
 import org.junit.jupiter.api.Test;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.EncodingUtils;
+import protobuf.magic.struct.Protobuf;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
 
@@ -13,7 +14,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeEmptyProto() throws InsufficientResourcesException {
     byte[] buffer = EncodingUtils.parseInput("");
-    ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
+    Protobuf result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(0, result.getProtobufFields().size());
     assertEquals(0, result.getLeftOver().length);
@@ -22,7 +23,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeEmptyGrpc() throws InsufficientResourcesException {
     byte[] buffer = EncodingUtils.parseInput("00 00000000");
-    ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
+    Protobuf result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(0, result.getProtobufFields().size());
     assertEquals(0, result.getLeftOver().length);
@@ -31,7 +32,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeInt() throws InsufficientResourcesException {
     byte[] buffer = EncodingUtils.parseInput("089601");
-    ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
+    Protobuf result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(1, result.getProtobufFields().size());
     ProtobufField part = result.getProtobufFields().get(0);
@@ -46,7 +47,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeString() throws InsufficientResourcesException {
     byte[] buffer = EncodingUtils.parseInput("12 07 74 65 73 74 69 6e 67");
-    ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
+    Protobuf result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(1, result.getProtobufFields().size());
     ProtobufField part = result.getProtobufFields().get(0);
@@ -61,7 +62,7 @@ class ProtoDecoderTest {
   @Test
   void testDecodeIntAndString() throws InsufficientResourcesException {
     byte[] buffer = EncodingUtils.parseInput("08 96 01 12 07 74 65 73 74 69 6e 67");
-    ProtobufDecodingResult result = ProtobufMessageDecoder.decodeProto(buffer);
+    Protobuf result = ProtobufMessageDecoder.decodeProto(buffer);
 
     assertEquals(2, result.getProtobufFields().size());
 

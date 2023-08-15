@@ -3,7 +3,7 @@ package protobuf.magic;
 import java.util.ArrayList;
 import java.util.List;
 import protobuf.magic.exception.UnknownTypeException;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.struct.Protobuf;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
@@ -11,7 +11,7 @@ import protobuf.magic.struct.ProtobufFieldValue;
 public class ProtobufJsonConverter {
   static final Logger logging = new Logger(ProtobufJsonConverter.class);
 
-  public static ProtobufDecodingResult decodeFromJson(String jsonString) {
+  public static Protobuf decodeFromJson(String jsonString) {
     List<ProtobufField> protobufFields = new ArrayList<>();
 
     jsonString = jsonString.replaceAll("\n", "").replaceAll(" ", "");
@@ -44,10 +44,10 @@ public class ProtobufJsonConverter {
       protobufFields.add(protobufField);
     }
 
-    return new ProtobufDecodingResult(protobufFields, leftOver, lenLeftOver);
+    return new Protobuf(protobufFields, leftOver, lenLeftOver);
   }
 
-  public static String encodeToJson(ProtobufDecodingResult result) {
+  public static String encodeToJson(Protobuf result) {
     StringBuilder jsonObject = new StringBuilder("{");
 
     for (ProtobufField field : result.getProtobufFields()) {

@@ -18,20 +18,21 @@ public class DecoderTabFactory {
     return outputArea;
   }
 
-  public static Component create(MontoyaApi api, DecoderTabModel tableModel) {
+  public static Component create(MontoyaApi api) {
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-    final boolean[] isUpdating = {false}; // TODO: fix that hack
+    boolean isUpdating = false;
 
-    inputArea
-        .getDocument()
-        .addDocumentListener(new InputAreaDocumentListener(inputArea, outputArea, isUpdating));
-    outputArea
-        .getDocument()
-        .addDocumentListener(new OutputAreaDocumentListener(outputArea, inputArea, isUpdating));
+    var inputListener = new InputAreaDocumentListener(inputArea, outputArea, isUpdating);
+    inputArea.getDocument().addDocumentListener(inputListener);
+
+    var outputListener = new OutputAreaDocumentListener(outputArea, inputArea, isUpdating);
+    outputArea.getDocument().addDocumentListener(outputListener);
 
     splitPane.setTopComponent(new JScrollPane(inputArea));
     splitPane.setBottomComponent(new JScrollPane(outputArea));
+
+    splitPane.setDividerLocation(100);
 
     return splitPane;
   }

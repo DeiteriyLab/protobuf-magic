@@ -1,4 +1,4 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;

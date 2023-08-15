@@ -1,20 +1,17 @@
-package protobuf.magic;
+package protobuf.magic.protobuf;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.InsufficientResourcesException;
 import protobuf.magic.exception.UnknownTypeException;
-import protobuf.magic.struct.ProtobufDecodingResult;
+import protobuf.magic.struct.Protobuf;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufMessageDecoder {
-  static final Logger logging = new Logger(ProtobufMessageDecoder.class);
-
-  public static ProtobufDecodingResult decodeProto(byte[] buffer)
-      throws InsufficientResourcesException {
+  public static Protobuf decodeProto(byte[] buffer) throws InsufficientResourcesException {
 
     BufferReader reader = new BufferReader(buffer);
     List<ProtobufField> parts = new ArrayList<>();
@@ -42,15 +39,12 @@ public class ProtobufMessageDecoder {
       reader.resetToCheckpoint();
     }
 
-    return new ProtobufDecodingResult(parts, reader.readBuffer(reader.leftBytes()), leftBytes);
+    return new Protobuf(parts, reader.readBuffer(reader.leftBytes()), leftBytes);
   }
 
   private static String readValueBasedOnType(BufferReader reader, int type)
       throws UnknownTypeException, InsufficientResourcesException {
     ProtobufFieldType fieldType = ProtobufFieldType.fromValue(type);
-    if (fieldType == null) {
-      throw new UnknownTypeException("Unknown type: " + type);
-    }
 
     switch (fieldType) {
       case VARINT:
@@ -72,14 +66,5 @@ public class ProtobufMessageDecoder {
     System.arraycopy(array, 0, newArray, 0, array.length);
     newArray[array.length] = value;
     return newArray;
-  }
-
-  public static String typeToString(int type, String subType) {
-    try {
-      return ProtobufFieldType.fromValue(type).getName() + (subType != null ? ":" + subType : "");
-    } catch (UnknownTypeException e) {
-      logging.logToError("Unknown type: " + type);
-      return "unknown";
-    }
   }
 }
