@@ -3,7 +3,6 @@ package protobuf.magic;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.message.HttpRequestResponse;
-import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.ui.Selection;
 import burp.api.montoya.ui.editor.EditorOptions;
@@ -11,8 +10,6 @@ import burp.api.montoya.ui.editor.RawEditor;
 import burp.api.montoya.ui.editor.extension.EditorCreationContext;
 import burp.api.montoya.ui.editor.extension.EditorMode;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor;
-import burp.api.montoya.utilities.Base64Utils;
-import burp.api.montoya.utilities.URLUtils;
 import java.awt.Component;
 import java.util.Optional;
 import javax.naming.InsufficientResourcesException;
@@ -21,18 +18,9 @@ import protobuf.magic.struct.ProtobufDecodingResult;
 class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
   private final Logger logging = new Logger(ProtoExtensionProvidedHttpRequestEditor.class);
   private final RawEditor requestEditor;
-  private final Base64Utils base64Utils;
-  private final URLUtils urlUtils;
   private HttpRequestResponse requestResponse;
-  private final MontoyaApi api;
-
-  private ParsedHttpParameter parsedHttpParameter;
 
   ProtoExtensionProvidedHttpRequestEditor(MontoyaApi api, EditorCreationContext creationContext) {
-    this.api = api;
-    base64Utils = api.utilities().base64Utils();
-    urlUtils = api.utilities().urlUtils();
-
     if (creationContext.editorMode() == EditorMode.READ_ONLY) {
       requestEditor = api.userInterface().createRawEditor(EditorOptions.READ_ONLY);
     } else {
