@@ -7,11 +7,19 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
 public class DecoderTabFactory {
+  private static JTextArea inputArea = new JTextArea();
+  private static JTextArea outputArea = new JTextArea();
+
+  public static JTextArea getInputArea() {
+    return inputArea;
+  }
+
+  public static JTextArea getOutputArea() {
+    return outputArea;
+  }
+
   public static Component create(MontoyaApi api, DecoderTabModel tableModel) {
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-    JTextArea inputArea = new JTextArea();
-    JTextArea outputArea = new JTextArea();
 
     final boolean[] isUpdating = {false}; // TODO: fix that hack
 
