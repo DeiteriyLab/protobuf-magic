@@ -3,7 +3,6 @@ package protobuf.magic;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.message.HttpRequestResponse;
-import burp.api.montoya.http.message.params.HttpParameter;
 import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.ui.Selection;
@@ -20,6 +19,7 @@ import javax.naming.InsufficientResourcesException;
 import protobuf.magic.struct.ProtobufDecodingResult;
 
 class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
+  private final Logger logging = new Logger(ProtoExtensionProvidedHttpRequestEditor.class);
   private final RawEditor requestEditor;
   private final Base64Utils base64Utils;
   private final URLUtils urlUtils;
@@ -45,24 +45,11 @@ class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRe
     HttpRequest request;
 
     if (requestEditor.isModified()) {
-      byte[] input = EncodingUtils.parseInput(requestEditor.getContents().toString());
-      System.out.println(requestEditor.getContents().toString());
-      ProtobufDecodingResult payload;
-      String output;
-      try {
-        payload = ProtobufMessageDecoder.decodeProto(input);
-        output = ProtobufJsonConverter.encodeToJson(payload).toString();
-      } catch (InsufficientResourcesException e) {
-        payload = null;
-        output = "Insufficient resources";
-      }
+      String content = requestEditor.getContents().toString();
+      ProtobufDecodingResult payload = ProtobufJsonConverter.decodeFromJson(content);
+      String output = ProtobufEncoder.encodeToProtobuf(payload);
 
-      request =
-          requestResponse
-              .request()
-              .withUpdatedParameters(
-                  HttpParameter.parameter(
-                      parsedHttpParameter.name(), output, parsedHttpParameter.type()));
+      request = requestResponse.request().withBody(ByteArray.byteArray(output));
     } else {
       request = requestResponse.request();
     }
@@ -83,6 +70,7 @@ class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRe
           ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
       output = ProtobufJsonConverter.encodeToJson(payload);
     } catch (InsufficientResourcesException e) {
+      logging.logToError(e);
       output = "Insufficient resources";
     }
 
