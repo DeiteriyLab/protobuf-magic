@@ -16,6 +16,8 @@ public class App implements BurpExtension {
     api.userInterface().registerSuiteTab("Protobuf Magic", DecoderTabFactory.create(api));
     api.userInterface()
         .registerHttpRequestEditorProvider(new ProtobufHttpRequestEditorProvider(api));
+    api.userInterface()
+        .registerHttpResponseEditorProvider(new ProtobufHttpResponseEditorProvider(api));
     api.userInterface().registerContextMenuItemsProvider(new ProtobufContextMenuItemsProvider(api));
   }
 }

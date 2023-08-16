@@ -17,12 +17,12 @@ import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 import protobuf.magic.struct.Protobuf;
 
-class ProtoExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
-  private final Logger logging = new Logger(ProtoExtensionProvidedHttpRequestEditor.class);
+class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
+  private final Logger logging = new Logger(ProtobufExtensionProvidedHttpRequestEditor.class);
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
 
-  ProtoExtensionProvidedHttpRequestEditor(MontoyaApi api, EditorCreationContext creationContext) {
+  ProtobufExtensionProvidedHttpRequestEditor(MontoyaApi api, EditorCreationContext creationContext) {
     if (creationContext.editorMode() == EditorMode.READ_ONLY) {
       requestEditor = api.userInterface().createRawEditor(EditorOptions.READ_ONLY);
     } else {

@@ -15,6 +15,6 @@ class ProtobufHttpRequestEditorProvider implements HttpRequestEditorProvider {
   @Override
   public ExtensionProvidedHttpRequestEditor provideHttpRequestEditor(
       EditorCreationContext creationContext) {
-    return new ProtoExtensionProvidedHttpRequestEditor(api, creationContext);
+    return new ProtobufExtensionProvidedHttpRequestEditor(api, creationContext);
   }
 }
