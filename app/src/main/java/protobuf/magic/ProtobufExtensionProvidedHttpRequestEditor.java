@@ -22,7 +22,8 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
 
-  ProtobufExtensionProvidedHttpRequestEditor(MontoyaApi api, EditorCreationContext creationContext) {
+  ProtobufExtensionProvidedHttpRequestEditor(
+      MontoyaApi api, EditorCreationContext creationContext) {
     if (creationContext.editorMode() == EditorMode.READ_ONLY) {
       requestEditor = api.userInterface().createRawEditor(EditorOptions.READ_ONLY);
     } else {
