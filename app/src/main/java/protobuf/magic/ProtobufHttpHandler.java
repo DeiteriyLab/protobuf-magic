@@ -68,7 +68,6 @@ class ProtobufHttpHandler implements HttpHandler {
   }
 
   private String fromHumanToProtobuf(String human) {
-    System.out.println(human);
     Protobuf res = ProtobufJsonConverter.decodeFromJson(human);
     String input = ProtobufEncoder.encodeToProtobuf(res);
     return input;
