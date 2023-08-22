@@ -5,10 +5,10 @@ import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.ui.contextmenu.ContextMenuEvent;
 import burp.api.montoya.ui.contextmenu.ContextMenuItemsProvider;
-import java.awt.*;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.JMenuItem;
 
 public class ProtobufContextMenuItemsProvider implements ContextMenuItemsProvider {
   private final MontoyaApi api;
