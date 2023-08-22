@@ -42,5 +42,4 @@ tasks.named<Test>("test") {
 
 tasks.shadowJar {
     archiveFileName.set("protobuf.jar")
-    dependsOn("test")
 }
