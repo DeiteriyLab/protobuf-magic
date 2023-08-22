@@ -22,5 +22,6 @@ public class App implements BurpExtension {
     api.userInterface().registerContextMenuItemsProvider(new ProtobufContextMenuItemsProvider(api));
     api.intruder().registerPayloadGeneratorProvider(new ProtobufPayloadGeneratorProvider());
     api.intruder().registerPayloadProcessor(new ProtobufPayloadProcessor(api));
+    api.http().registerHttpHandler(new ProtobufHttpHandler(api));
   }
 }
