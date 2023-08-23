@@ -59,7 +59,7 @@ class ProtobufHttpHandler implements HttpHandler {
     String output;
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufJsonConverter.encodeToJson(protobuf).toString();
+      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
     } catch (InsufficientResourcesException e) {
       logging.logToError(e);
       output = "Insufficient resources";
@@ -68,7 +68,7 @@ class ProtobufHttpHandler implements HttpHandler {
   }
 
   private String fromHumanToProtobuf(String human) {
-    Protobuf res = ProtobufJsonConverter.decodeFromJson(human);
+    Protobuf res = ProtobufHumanConvertor.decodeFromHuman(human);
     String input = ProtobufEncoder.encodeToProtobuf(res);
     return input;
   }

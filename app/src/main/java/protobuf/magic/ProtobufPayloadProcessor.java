@@ -30,7 +30,7 @@ public class ProtobufPayloadProcessor implements PayloadProcessor {
     String output;
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufJsonConverter.encodeToJson(protobuf).toString();
+      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
     } catch (InsufficientResourcesException e) {
       logging.logToError(e);
       output = "Insufficient resources";

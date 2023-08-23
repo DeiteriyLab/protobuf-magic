@@ -37,7 +37,7 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      Protobuf payload = ProtobufJsonConverter.decodeFromJson(content);
+      Protobuf payload = ProtobufHumanConvertor.decodeFromHuman(content);
       String output = ProtobufEncoder.encodeToProtobuf(payload);
 
       request = requestResponse.request().withBody(ByteArray.byteArray(output));
@@ -58,7 +58,7 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
     try {
       Protobuf payload = ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
-      output = ProtobufJsonConverter.encodeToJson(payload);
+      output = ProtobufHumanConvertor.encodeToHuman(payload);
     } catch (InsufficientResourcesException e) {
       logging.logToError(e);
       output = "Insufficient resources";
