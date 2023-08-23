@@ -14,7 +14,7 @@ public class App implements BurpExtension {
     api.extension().setName(EXTENSION_NAME);
     logging.logToOutput("Loaded protobuf magic");
 
-    api.userInterface().registerSuiteTab("Protobuf Magic", DecoderTabFactory.create(api));
+    api.userInterface().registerSuiteTab(EXTENSION_NAME, DecoderTabFactory.create(api));
     api.userInterface()
         .registerHttpRequestEditorProvider(new ProtobufHttpRequestEditorProvider(api));
     api.userInterface()

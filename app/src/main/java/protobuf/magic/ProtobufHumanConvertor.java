@@ -13,24 +13,29 @@ import protobuf.magic.struct.ProtobufFieldValue;
 public class ProtobufHumanConvertor {
   static final Logger logging = new Logger(ProtobufHumanConvertor.class);
 
-  public static Protobuf decodeFromHuman(String jsonString) {
+  public static Protobuf decodeFromHuman(String human) {
     List<ProtobufField> protobufFields = new ArrayList<>();
 
     byte[] leftOver = new byte[0];
     int lenLeftOver = 0;
-    String[] lines = jsonString.split("\n");
+    String[] lines = human.split("\n");
     for (String line : lines) {
       String[] parts = line.split(":");
       if (parts.length < 3) {
         System.err.println("Index out of bounds: " + line);
         continue;
       }
-      int index = Integer.parseInt(parts[0]);
-      String stype = parts[1];
-      String value = Arrays.stream(parts, 3, parts.length)
-                         .collect(Collectors.joining(" "));
+      int index = 0;
+      try {
+        index = Integer.parseInt(parts[0]) + 1;
+      } catch (NumberFormatException e) {
+        logging.logToError(e);
+      }
 
-      if (stype == "leftOver") {
+      String stype = parts[1];
+      String value = Arrays.stream(parts, 2, parts.length).collect(Collectors.joining(" "));
+
+      if (stype.equalsIgnoreCase("leftOver")) {
         lenLeftOver = Integer.parseInt(value);
         continue;
       }
@@ -42,13 +47,11 @@ public class ProtobufHumanConvertor {
         logging.logToError("Unknown type: " + stype);
         continue;
       }
-      ProtobufFieldValue protobufFieldValue =
-          new ProtobufFieldValue(type, value);
+      ProtobufFieldValue protobufFieldValue = new ProtobufFieldValue(type, value);
 
       int[] byteRange = new int[0];
 
-      ProtobufField protobufField =
-          new ProtobufField(byteRange, index, protobufFieldValue);
+      ProtobufField protobufField = new ProtobufField(byteRange, index, protobufFieldValue);
       protobufFields.add(protobufField);
     }
 
@@ -58,7 +61,8 @@ public class ProtobufHumanConvertor {
   public static String encodeToHuman(Protobuf result) {
     StringBuilder human = new StringBuilder();
     for (ProtobufField field : result.getProtobufFields()) {
-      human.append(field.getIndex())
+      human
+          .append(field.getIndex())
           .append(":")
           .append(field.getType())
           .append(":")

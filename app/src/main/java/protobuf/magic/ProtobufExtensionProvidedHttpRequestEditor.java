@@ -2,6 +2,7 @@ package protobuf.magic;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ByteArray;
+import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.ui.Selection;
@@ -11,7 +12,7 @@ import burp.api.montoya.ui.editor.extension.EditorCreationContext;
 import burp.api.montoya.ui.editor.extension.EditorMode;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor;
 import java.awt.Component;
-import java.util.Optional;
+import java.util.List;
 import javax.naming.InsufficientResourcesException;
 import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
@@ -69,15 +70,24 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
   @Override
   public boolean isEnabledFor(HttpRequestResponse requestResponse) {
-    Optional<?> reqContentTypeHeader =
-        requestResponse.request().headers().stream()
-            .filter(
-                h ->
-                    h.name().equalsIgnoreCase("Content-Type")
-                        && h.value().contains("application/grpc-web-text"))
-            .findFirst();
+    List<HttpHeader> headers = null;
+    if (requestResponse.request() != null) {
+      headers = requestResponse.request().headers();
+    } else if (requestResponse.response() != null) {
+      headers = requestResponse.response().headers();
+    }
 
-    return reqContentTypeHeader.isPresent();
+    if (headers == null || headers.size() == 0) {
+      return false;
+    }
+
+    return headers.stream()
+        .filter(
+            h ->
+                h.name().equalsIgnoreCase("Content-Type")
+                    && h.value().contains("application/grpc-web-text"))
+        .findFirst()
+        .isPresent();
   }
 
   @Override

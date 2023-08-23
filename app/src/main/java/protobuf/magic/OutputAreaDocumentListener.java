@@ -1,7 +1,6 @@
 package protobuf.magic;
 
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufEncoder;
@@ -12,16 +11,14 @@ public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea inputArea;
   private LockActions lockActions = new LockActions();
 
-  public OutputAreaDocumentListener(JTextArea outputArea, JTextArea inputArea
-                                    ) {
+  public OutputAreaDocumentListener(JTextArea outputArea, JTextArea inputArea) {
     this.outputArea = outputArea;
     this.inputArea = inputArea;
   }
 
   @Override
   public void insertUpdate(DocumentEvent e) {
-    if (lockActions.isLock())
-      return;
+    if (lockActions.isLock()) return;
     lockActions.setLock(true);
     String output = outputArea.getText();
     try {

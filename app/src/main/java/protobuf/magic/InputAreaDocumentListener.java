@@ -2,14 +2,12 @@ package protobuf.magic;
 
 import javax.naming.InsufficientResourcesException;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 
 public class InputAreaDocumentListener implements DocumentListener {
-  private static final Logger logging =
-      new Logger(InputAreaDocumentListener.class);
+  private static final Logger logging = new Logger(InputAreaDocumentListener.class);
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private LockActions lockActions = new LockActions();
@@ -21,8 +19,7 @@ public class InputAreaDocumentListener implements DocumentListener {
 
   @Override
   public void insertUpdate(DocumentEvent e) {
-    if (lockActions.isLock())
-      return;
+    if (lockActions.isLock()) return;
     lockActions.setLock(true);
     String input = inputArea.getText();
     byte[] bytes = new byte[0];

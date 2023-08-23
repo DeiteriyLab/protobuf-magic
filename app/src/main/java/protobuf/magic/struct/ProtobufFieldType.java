@@ -14,18 +14,18 @@ import protobuf.magic.exception.UnknownTypeException;
  * helps to maintain the codebase and increases readability.
  */
 public enum ProtobufFieldType {
-  VARINT(0, "varint"),
-  FIXED64(1, "fixed64"),
-  LENDELIM(2, "string"),
-  FIXED32(5, "fixed32"),
-  UINT(6, "uint"),
-  FLOAT(7, "float"),
-  DOUBLE(8, "double"),
-  INT(9, "int"),
-  SINT(10, "sint"),
-  BYTES(11, "bytes"),
-  STRING(12, "string"),
-  STRING_OR_BYTES(13, "string_or_bytes");
+  VARINT(0, "VARINT"),
+  FIXED64(1, "FIXED64"),
+  LENDELIM(2, "LENDELIM"),
+  FIXED32(5, "FIXED32"),
+  UINT(6, "UNIT"),
+  FLOAT(7, "FLOAT"),
+  DOUBLE(8, "DOUBLE"),
+  INT(9, "INT"),
+  SINT(10, "SINT"),
+  BYTES(11, "BYTES"),
+  STRING(12, "STRING"),
+  STRING_OR_BYTES(13, "STRING_OR_BYTES");
 
   private final int value;
   private final String name;

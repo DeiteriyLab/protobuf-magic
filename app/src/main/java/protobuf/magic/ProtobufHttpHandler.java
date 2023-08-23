@@ -7,7 +7,6 @@ import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
-import burp.api.montoya.http.message.responses.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.InsufficientResourcesException;
@@ -27,6 +26,7 @@ class ProtobufHttpHandler implements HttpHandler {
     }
     String body = requestToBeSent.bodyToString();
     String output = fromHumanToProtobuf(body);
+
     HttpRequest modifiedRequest = requestToBeSent.withBody(output);
     return continueWith(modifiedRequest);
   }
@@ -36,10 +36,8 @@ class ProtobufHttpHandler implements HttpHandler {
     if (!hasProtobuf(responseReceived.headers())) {
       return continueWith(responseReceived);
     }
-    String humanProtobuf = fromHumanToProtobuf(responseReceived.bodyToString());
-    HttpResponse modified = responseReceived.withBody(humanProtobuf);
 
-    return continueWith(modified);
+    return continueWith(responseReceived);
   }
 
   private static boolean hasProtobuf(List<HttpHeader> headers) {
@@ -48,7 +46,7 @@ class ProtobufHttpHandler implements HttpHandler {
             .filter(
                 h ->
                     h.name().equalsIgnoreCase("Content-Type")
-                        && h.value().contains("application/grpc-web-text"))
+                        && h.value().startsWith("application/grpc-web-text"))
             .findFirst();
 
     return contentTypeHeader.isPresent();
