@@ -21,12 +21,10 @@ public class DecoderTabFactory {
   public static Component create(MontoyaApi api) {
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-    boolean isUpdating = false;
-
-    var inputListener = new InputAreaDocumentListener(inputArea, outputArea, isUpdating);
+    var inputListener = new InputAreaDocumentListener(inputArea, outputArea);
     inputArea.getDocument().addDocumentListener(inputListener);
 
-    var outputListener = new OutputAreaDocumentListener(outputArea, inputArea, isUpdating);
+    var outputListener = new OutputAreaDocumentListener(outputArea, inputArea);
     outputArea.getDocument().addDocumentListener(outputListener);
 
     splitPane.setTopComponent(new JScrollPane(inputArea));

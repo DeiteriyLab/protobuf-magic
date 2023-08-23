@@ -8,36 +8,39 @@ import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 
 public class InputAreaDocumentListener implements DocumentListener {
-  private static final Logger logging = new Logger(InputAreaDocumentListener.class);
+  private static final Logger logging =
+      new Logger(InputAreaDocumentListener.class);
   private final JTextArea inputArea;
   private final JTextArea outputArea;
-  private boolean isUpdating;
+  private LockActions lockActions = new LockActions();
 
-  public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea, boolean isUpdating) {
+  public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea) {
     this.inputArea = inputArea;
     this.outputArea = outputArea;
-    this.isUpdating = isUpdating;
   }
 
   @Override
   public void insertUpdate(DocumentEvent e) {
-    if (isUpdating) return;
-    isUpdating = true;
-    SwingUtilities.invokeLater(
-        () -> {
-          String input = inputArea.getText();
-          byte[] bytes = EncodingUtils.parseInput(input);
-          String output;
-          try {
-            var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-            output = ProtobufJsonConverter.encodeToJson(protobuf).toString();
-          } catch (InsufficientResourcesException ex) {
-            logging.logToError(ex);
-            output = "Insufficient resources";
-          }
-          outputArea.setText(output);
-          isUpdating = false;
-        });
+    if (lockActions.isLock())
+      return;
+    lockActions.setLock(true);
+    String input = inputArea.getText();
+    byte[] bytes = new byte[0];
+    try {
+      bytes = EncodingUtils.parseInput(input);
+    } catch (StringIndexOutOfBoundsException ex) {
+      logging.logToError(ex);
+    }
+    String output;
+    try {
+      var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
+      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
+    } catch (InsufficientResourcesException ex) {
+      logging.logToError(ex);
+      output = "Insufficient resources";
+    }
+    outputArea.setText(output);
+    lockActions.setLock(false);
   }
 
   @Override
