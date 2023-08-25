@@ -11,8 +11,6 @@ import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufHumanConvertor {
-  static final Logger logging = new Logger(ProtobufHumanConvertor.class);
-
   public static Protobuf decodeFromHuman(String human) {
     List<ProtobufField> protobufFields = new ArrayList<>();
 
@@ -25,13 +23,6 @@ public class ProtobufHumanConvertor {
         System.err.println("Index out of bounds: " + line);
         continue;
       }
-      int index = 0;
-      try {
-        index = Integer.parseInt(parts[0]) + 1;
-      } catch (NumberFormatException e) {
-        logging.logToError(e);
-      }
-
       String stype = parts[1];
       String value = Arrays.stream(parts, 2, parts.length).collect(Collectors.joining(" "));
 
@@ -44,11 +35,16 @@ public class ProtobufHumanConvertor {
       try {
         type = ProtobufFieldType.fromName(stype);
       } catch (UnknownTypeException e) {
-        logging.logToError("Unknown type: " + stype);
         continue;
       }
       ProtobufFieldValue protobufFieldValue = new ProtobufFieldValue(type, value);
 
+      int index = 0;
+      try {
+        index = Integer.parseInt(parts[0]);
+      } catch (NumberFormatException e) {
+        System.err.println("NumberFormatException");
+      }
       int[] byteRange = new int[0];
 
       ProtobufField protobufField = new ProtobufField(byteRange, index, protobufFieldValue);
@@ -69,7 +65,7 @@ public class ProtobufHumanConvertor {
           .append(field.getValue())
           .append("\n");
     }
-    human.append("0:leftOver:").append(result.getLenLeftOver());
+    human.append("None:leftOver:").append(result.getLenLeftOver());
     return human.toString();
   }
 }

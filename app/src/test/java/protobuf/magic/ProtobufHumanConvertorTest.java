@@ -14,7 +14,7 @@ import protobuf.magic.struct.ProtobufFieldValue;
 public class ProtobufHumanConvertorTest {
   @Test
   public void testDecodeFromHuman() {
-    String human = "1:int:123\n2:float:321.0\n3:double:123.1";
+    String human = "1:INT:123\n2:FLOAT:321.0\n3:DOUBLE:123.1";
     Protobuf result = ProtobufHumanConvertor.decodeFromHuman(human);
     assertNotNull(result);
     assertEquals(3, result.getProtobufFields().size());
@@ -27,12 +27,12 @@ public class ProtobufHumanConvertorTest {
   public void testEncodeToHuman() {
     ProtobufFieldValue protobufFieldValue3 =
         new ProtobufFieldValue(ProtobufFieldType.DOUBLE, "123.1");
-    ProtobufField protobufField3 = new ProtobufField(new int[0], 2, protobufFieldValue3);
+    ProtobufField protobufField3 = new ProtobufField(new int[0], 3, protobufFieldValue3);
     ProtobufFieldValue protobufFieldValue2 =
         new ProtobufFieldValue(ProtobufFieldType.FLOAT, "321.0");
-    ProtobufField protobufField2 = new ProtobufField(new int[0], 1, protobufFieldValue2);
+    ProtobufField protobufField2 = new ProtobufField(new int[0], 2, protobufFieldValue2);
     ProtobufFieldValue protobufFieldValue1 = new ProtobufFieldValue(ProtobufFieldType.INT, "123");
-    ProtobufField protobufField1 = new ProtobufField(new int[0], 0, protobufFieldValue1);
+    ProtobufField protobufField1 = new ProtobufField(new int[0], 1, protobufFieldValue1);
 
     List<ProtobufField> protobufFields =
         Arrays.asList(protobufField1, protobufField2, protobufField3);
@@ -40,6 +40,6 @@ public class ProtobufHumanConvertorTest {
 
     String shuman = ProtobufHumanConvertor.encodeToHuman(result).toString();
 
-    assertEquals("1:INT:123\n2:FLOAT:321.0\n3:DOUBLE:123.1\n0:leftOver:0", shuman);
+    assertEquals("1:INT:123\n2:FLOAT:321.0\n3:DOUBLE:123.1\nNone:leftOver:0", shuman);
   }
 }

@@ -28,7 +28,7 @@ public class ProtobufEncoder {
           getProtobufFieldLabel(fieldType),
           getProtobufFieldType(fieldType),
           fieldName,
-          field.getIndex() + 1);
+          field.getIndex());
     }
 
     MessageDefinition msgDef = msgDefBuilder.build();

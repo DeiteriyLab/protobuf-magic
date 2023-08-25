@@ -66,8 +66,14 @@ class ProtobufHttpHandler implements HttpHandler {
   }
 
   private String fromHumanToProtobuf(String human) {
+    if (!checkHumanFormat(human)) {
+      return human;
+    }
     Protobuf res = ProtobufHumanConvertor.decodeFromHuman(human);
-    String input = ProtobufEncoder.encodeToProtobuf(res);
-    return input;
+    return ProtobufEncoder.encodeToProtobuf(res);
+  }
+
+  private boolean checkHumanFormat(String str) {
+    return str.contains("None:leftOver");
   }
 }
