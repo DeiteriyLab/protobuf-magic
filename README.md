@@ -17,14 +17,15 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 
 ## Usage
 
-<center>
-    <img src=".readme/send.png">
-    <img src=".readme/psend.png">
-</center>
 1. Once installed, open or intercept traffic containing Protobuf messages in the Proxy, Repeater, or Intruder.
 2. Protobuf Magic will automatically detect and analyze Protobuf messages in the request and response payloads.
 3. In the Proxy and Repeater, you can modify the Protobuf message content before forwarding it to the server.
 4. Use the "Send to Intruder" option to send the Protobuf message to Intruder for further fuzzing or other testing.
+
+<p align="center">
+<img width="800" src=".readme/send.png">
+<img width="800" src=".readme/psend.png">
+</p>
 
 ## Limitations
 
