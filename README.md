@@ -10,13 +10,18 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 
 ## Installation
 
-1. Download the latest release from the [Releases](https://github.com/michael2to3/protobuf-magic/releases) page.
+1. Download the latest release from the [Releases](https://github.com/DeiteriyLab/protobuf-magic/releases) page.
 2. In Burp Suite, navigate to the "Extender" tab, and click on "Add" under the "Extensions" tab.
 3. Select the downloaded JAR file and click "Next."
 4. Protobuf Magic will now be installed and ready to use in Burp Suite.
 
 ## Usage
 
+<center>
+    <p align="center">
+    ![send](.readme/send.png)
+    ![psend](.readme/psend.png)
+</center>
 1. Once installed, open or intercept traffic containing Protobuf messages in the Proxy, Repeater, or Intruder.
 2. Protobuf Magic will automatically detect and analyze Protobuf messages in the request and response payloads.
 3. In the Proxy and Repeater, you can modify the Protobuf message content before forwarding it to the server.
@@ -26,12 +31,7 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 
 - Protobuf Magic may not be able to fully interpret complex Protobuf structures without access to the original .proto definitions. As a result, some nested or custom types may not be accurately displayed.
 - Modifying Protobuf messages without knowing the exact message structure may lead to malformed or incorrect messages being sent to the server.
-- It is recommended to use Protobuf Magic for exploratory and testing purposes only, and not as a replacement for proper Protobuf definitions.
-
-## Disclaimer
-
-Use Protobuf Magic responsibly and only on systems you have explicit permission to test. The authors are not responsible for any misuse or damage caused by this extension.
 
 ## License
 
-Protobuf Magic is released under the GNU License. See [LICENSE](https://github.com/michael2to3/protobuf-magic/blob/main/LICENSE) for more details.
+Protobuf Magic is released under the GNU License. See [LICENSE](https://github.com/DeiteriyLab/protobuf-magic/blob/main/LICENSE) for more details.
