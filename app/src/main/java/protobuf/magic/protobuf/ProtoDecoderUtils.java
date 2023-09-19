@@ -13,18 +13,18 @@ public class ProtoDecoderUtils {
 
     ByteBuffer bufferFloat = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     float floatValue = bufferFloat.getFloat();
-    result[2] = new ProtobufFieldValue(ProtobufFieldType.FLOAT, String.format("%.16f", floatValue));
+    result[2] = new ProtobufFieldValue(ProtobufFieldType.I64, String.format("%.16f", floatValue));
     ByteBuffer bufferInt = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     int intValue = bufferInt.getInt();
-    result[0] = new ProtobufFieldValue(ProtobufFieldType.INT, String.valueOf(intValue));
+    result[0] = new ProtobufFieldValue(ProtobufFieldType.VARINT, String.valueOf(intValue));
 
     ByteBuffer bufferUint = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     long uintValue = bufferUint.getInt() & 0xffffffffL;
     // Should not return Unsigned Int result when Int is not negative
     if (intValue >= 0) {
-      result[1] = new ProtobufFieldValue(ProtobufFieldType.UINT, null);
+      result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, null);
     } else {
-      result[1] = new ProtobufFieldValue(ProtobufFieldType.UINT, String.valueOf(uintValue));
+      result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, String.valueOf(uintValue));
     }
 
     return result;
@@ -37,14 +37,14 @@ public class ProtoDecoderUtils {
     long uintValue = buffer.getLong();
 
     ProtobufFieldValue[] result = new ProtobufFieldValue[3];
-    result[0] = new ProtobufFieldValue(ProtobufFieldType.INT, String.valueOf(uintValue));
+    result[0] = new ProtobufFieldValue(ProtobufFieldType.VARINT, String.valueOf(uintValue));
     // Check if uintValue is negative. If not, set unsigned integer to null.
     if (uintValue >= 0) {
-      result[1] = new ProtobufFieldValue(ProtobufFieldType.UINT, null);
+      result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, null);
     } else {
-      result[1] = new ProtobufFieldValue(ProtobufFieldType.UINT, Long.toUnsignedString(uintValue));
+      result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, Long.toUnsignedString(uintValue));
     }
-    result[2] = new ProtobufFieldValue(ProtobufFieldType.DOUBLE, String.valueOf(floatValue));
+    result[2] = new ProtobufFieldValue(ProtobufFieldType.I64, String.valueOf(floatValue));
 
     return result;
   }
@@ -56,24 +56,24 @@ public class ProtoDecoderUtils {
     int signedValue = (rawValue >> 1) ^ (-(rawValue & 1));
 
     ProtobufFieldValue[] result = new ProtobufFieldValue[2];
-    result[0] = new ProtobufFieldValue(ProtobufFieldType.INT, String.valueOf(rawValue));
-    result[1] = new ProtobufFieldValue(ProtobufFieldType.SINT, String.valueOf(signedValue));
+    result[0] = new ProtobufFieldValue(ProtobufFieldType.VARINT, String.valueOf(rawValue));
+    result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, String.valueOf(signedValue));
 
     return result;
   }
 
   public static ProtobufFieldValue decodeStringOrBytes(byte[] value) {
     if (value.length == 0) {
-      return new ProtobufFieldValue(ProtobufFieldType.STRING_OR_BYTES, "");
+      return new ProtobufFieldValue(ProtobufFieldType.LEN, "");
     }
     String textValue = new String(value, StandardCharsets.UTF_8);
 
     // Check if the textValue contains the Unicode replacement character
     if (textValue.contains("\uFFFD")) {
       // Return a Protobuf object with type TYPES.BYTES and value "Byte representation"
-      return new ProtobufFieldValue(ProtobufFieldType.BYTES, "Byte representation");
+      return new ProtobufFieldValue(ProtobufFieldType.LEN, "Byte representation");
     } else {
-      return new ProtobufFieldValue(ProtobufFieldType.STRING, textValue);
+      return new ProtobufFieldValue(ProtobufFieldType.LEN, textValue);
     }
   }
 }

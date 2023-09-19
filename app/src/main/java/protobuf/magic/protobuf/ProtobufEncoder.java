@@ -19,16 +19,15 @@ public class ProtobufEncoder {
     DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder();
     schemaBuilder.setName("DynamicSchema");
 
-    MessageDefinition.Builder msgDefBuilder = MessageDefinition.newBuilder("DynamicSchema");
+    MessageDefinition.Builder msgDefBuilder =
+        MessageDefinition.newBuilder("DynamicSchema");
 
     for (ProtobufField field : res.getProtobufFields()) {
       String fieldName = generateKey(field.getIndex());
       ProtobufFieldType fieldType = field.getType();
-      msgDefBuilder.addField(
-          getProtobufFieldLabel(fieldType),
-          getProtobufFieldType(fieldType),
-          fieldName,
-          field.getIndex());
+      msgDefBuilder.addField(getProtobufFieldLabel(fieldType),
+                             getProtobufFieldType(fieldType), fieldName,
+                             field.getIndex());
     }
 
     MessageDefinition msgDef = msgDefBuilder.build();
@@ -37,76 +36,30 @@ public class ProtobufEncoder {
   }
 
   private static String getProtobufFieldLabel(ProtobufFieldType type) {
-    switch (type) {
-      case VARINT:
-      case FIXED64:
-      case LENDELIM:
-      case FIXED32:
-      case UINT:
-      case INT:
-      case SINT:
-        return "optional";
-      case FLOAT:
-      case DOUBLE:
-        return "optional";
-      case BYTES:
-      case STRING:
-      case STRING_OR_BYTES:
-        return "optional";
-      default:
-        return "optional";
-    }
+    return "optional";
   }
 
   private static String getProtobufFieldType(ProtobufFieldType type) {
-    // double -> TYPE_DOUBLE
-    // float -> TYPE_FLOAT
-    // int32 -> TYPE_INT32
-    // int64 -> TYPE_INT64
-    // uint32 -> TYPE_UINT32
-    // uint64 -> TYPE_UINT64
-    // sint32 -> TYPE_SINT32
-    // sint64 -> TYPE_SINT64
-    // fixed32 -> TYPE_FIXED32
-    // fixed64 -> TYPE_FIXED64
-    // sfixed32 -> TYPE_SFIXED32
-    // sfixed64 -> TYPE_SFIXED64
-    // bool -> TYPE_BOOL
-    // string -> TYPE_STRING
-    // bytes -> TYPE_BYTES
-    // enum -> TYPE_ENUM
-    // message -> TYPE_MESSAGE
-    // group -> TYPE_GROUP
-
-    // TODO: add support 64 bit
+    // 0	VARINT	int32, int64, uint32, uint64, sint32, sint64, bool, enum
+    // 1	I64	fixed64, sfixed64, double
+    // 2	LEN	string, bytes, embedded messages, packed repeated fields
+    // 3	SGROUP	group start (deprecated)
+    // 4	EGROUP	group end (deprecated)
+    // 5	I32	fixed32, sfixed32, float
     switch (type) {
-      case VARINT:
-        return "int32";
-      case LENDELIM:
-        return "string";
-      case FIXED32:
-        return "fixed32";
-      case FIXED64:
-        return "fixed64";
-      case UINT:
-        return "uint32";
-      case FLOAT:
-        return "float32";
-      case DOUBLE:
-        return "double";
-      case INT:
-        return "int32";
-      case SINT:
-        return "sint32";
-      case BYTES:
-        return "bytes";
-      case STRING:
-        return "string";
-      case STRING_OR_BYTES:
-        return "bytes";
-      default:
-        return "int32";
+    case VARINT:
+      return "sint64";
+    case I64:
+      return "fixed64";
+    case LEN:
+      return "bytes";
+    case SGROUP:
+    case EGROUP:
+      return "group"; // @FIXME
+    case I32:
+      return "sfixed32";
     }
+    throw new RuntimeException("Unknown type: " + type);
   }
 
   private static String generateKey(int base) {
@@ -120,7 +73,8 @@ public class ProtobufEncoder {
     } catch (DescriptorValidationException e) {
       throw new RuntimeException(e);
     }
-    DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
+    DynamicMessage.Builder msgBuilder =
+        schema.newMessageBuilder("DynamicSchema");
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
     for (ProtobufField field : res.getProtobufFields()) {
       String fieldName = generateKey(field.getIndex());
@@ -138,46 +92,32 @@ public class ProtobufEncoder {
     }
     DynamicMessage msg = msgBuilder.build();
     byte[] msgBytes = msg.toByteArray();
-    msgBytes = LeftOverBytesAppender.appendLeftOverBytes(res.getLenLeftOver(), msgBytes);
+    msgBytes = LeftOverBytesAppender.appendLeftOverBytes(res.getLenLeftOver(),
+                                                         msgBytes);
     return encodeToBase64(msgBytes);
   }
 
   private static boolean isDigit(final ProtobufField field) {
-    switch (field.getType()) {
-      case VARINT:
-      case FIXED64:
-      case FIXED32:
-      case UINT:
-      case FLOAT:
-      case DOUBLE:
-      case INT:
-      case SINT:
-        return true;
-      default:
-        return false;
-    }
+    return field.getType() == ProtobufFieldType.VARINT;
   }
 
-  private static Object convertValueToProtobufType(ProtobufFieldType type, String value)
+  private static Object convertValueToProtobufType(ProtobufFieldType type,
+                                                   String value)
       throws UnknownTypeException {
     switch (type) {
-      case VARINT:
-      case FIXED64:
-      case FIXED32:
-      case UINT:
-      case FLOAT:
-      case DOUBLE:
-      case INT:
-      case SINT:
-        return value;
-      case BYTES:
-        return ByteString.copyFrom(Base64.getDecoder().decode(value));
-      case STRING:
-      case STRING_OR_BYTES:
-      case LENDELIM:
-        return value;
-      default:
-        throw new UnknownTypeException(type.toString());
+    case VARINT:
+      return value;
+    case LEN:
+      return ByteString.copyFrom(Base64.getDecoder().decode(value));
+    case I64:
+      return Long.parseLong(value);
+    case I32:
+      return Integer.parseInt(value);
+    case SGROUP:
+    case EGROUP:
+      return value;
+    default:
+      throw new UnknownTypeException(type.toString());
     }
   }
 
