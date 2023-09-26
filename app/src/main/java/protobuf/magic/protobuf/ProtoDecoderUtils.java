@@ -42,7 +42,8 @@ public class ProtoDecoderUtils {
     if (uintValue >= 0) {
       result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, null);
     } else {
-      result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, Long.toUnsignedString(uintValue));
+      result[1] =
+          new ProtobufFieldValue(ProtobufFieldType.VARINT, Long.toUnsignedString(uintValue));
     }
     result[2] = new ProtobufFieldValue(ProtobufFieldType.I64, String.valueOf(floatValue));
 
