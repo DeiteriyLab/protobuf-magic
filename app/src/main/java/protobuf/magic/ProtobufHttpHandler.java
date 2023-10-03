@@ -7,6 +7,7 @@ import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.handler.*;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.InsufficientResourcesException;
@@ -20,7 +21,8 @@ class ProtobufHttpHandler implements HttpHandler {
   public ProtobufHttpHandler(MontoyaApi api) {}
 
   @Override
-  public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
+  public RequestToBeSentAction
+  handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
     if (!hasProtobuf(requestToBeSent.headers())) {
       return continueWith(requestToBeSent);
     }
@@ -32,7 +34,8 @@ class ProtobufHttpHandler implements HttpHandler {
   }
 
   @Override
-  public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived responseReceived) {
+  public ResponseReceivedAction
+  handleHttpResponseReceived(HttpResponseReceived responseReceived) {
     if (!hasProtobuf(responseReceived.headers())) {
       return continueWith(responseReceived);
     }
@@ -43,10 +46,9 @@ class ProtobufHttpHandler implements HttpHandler {
   private static boolean hasProtobuf(List<HttpHeader> headers) {
     Optional<?> contentTypeHeader =
         headers.stream()
-            .filter(
-                h ->
-                    h.name().equalsIgnoreCase("Content-Type")
-                        && h.value().startsWith("application/grpc-web-text"))
+            .filter(h
+                    -> h.name().equalsIgnoreCase("Content-Type") &&
+                           h.value().startsWith("application/grpc-web-text"))
             .findFirst();
 
     return contentTypeHeader.isPresent();
@@ -58,7 +60,7 @@ class ProtobufHttpHandler implements HttpHandler {
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
       output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (InsufficientResourcesException e) {
+    } catch (InsufficientResourcesException | JsonProcessingException e) {
       logging.logToError(e);
       output = "Insufficient resources";
     }
@@ -69,7 +71,12 @@ class ProtobufHttpHandler implements HttpHandler {
     if (!checkHumanFormat(human)) {
       return human;
     }
-    Protobuf res = ProtobufHumanConvertor.decodeFromHuman(human);
+    Protobuf res = null;
+    try {
+      res = ProtobufHumanConvertor.decodeFromHuman(human);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
     return ProtobufEncoder.encodeToProtobuf(res);
   }
 

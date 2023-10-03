@@ -1,7 +1,5 @@
 package protobuf.magic.struct;
 
-import java.util.Arrays;
-
 public class ProtobufField {
   private final int[] byteRange;
   private final int index;
@@ -29,19 +27,7 @@ public class ProtobufField {
     return protobuf.getType();
   }
 
-  public String getValue() {
+  public byte[] getValue() {
     return protobuf.getValue();
-  }
-
-  @Override
-  public String toString() {
-    return "Part{"
-        + "byteRange="
-        + Arrays.toString(byteRange)
-        + ", index="
-        + index
-        + ", protobuf="
-        + protobuf
-        + "}";
   }
 }

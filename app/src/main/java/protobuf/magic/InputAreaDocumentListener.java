@@ -3,6 +3,7 @@ package protobuf.magic;
 import javax.naming.InsufficientResourcesException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 
@@ -32,7 +33,7 @@ public class InputAreaDocumentListener implements DocumentListener {
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
       output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (InsufficientResourcesException ex) {
+    } catch (JsonProcessingException | InsufficientResourcesException ex) {
       logging.logToError(ex);
       output = "Insufficient resources";
     }

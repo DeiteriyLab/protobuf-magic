@@ -2,9 +2,9 @@ package protobuf.magic.struct;
 
 public class ProtobufFieldValue {
   private final ProtobufFieldType type;
-  private final String value;
+  private final byte[] value;
 
-  public ProtobufFieldValue(ProtobufFieldType type, String value) {
+  public ProtobufFieldValue(ProtobufFieldType type, byte[] value) {
     this.type = type;
     this.value = value;
   }
@@ -13,12 +13,7 @@ public class ProtobufFieldValue {
     return type;
   }
 
-  public String getValue() {
+  public byte[] getValue() {
     return value;
-  }
-
-  @Override
-  public String toString() {
-    return "Protobuf{" + "type=" + type + ", value='" + value + '\'' + "}";
   }
 }

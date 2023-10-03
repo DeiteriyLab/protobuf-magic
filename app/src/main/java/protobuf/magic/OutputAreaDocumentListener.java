@@ -5,6 +5,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.struct.Protobuf;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea outputArea;
@@ -25,7 +26,7 @@ public class OutputAreaDocumentListener implements DocumentListener {
       Protobuf res = ProtobufHumanConvertor.decodeFromHuman(output);
       String input = ProtobufEncoder.encodeToProtobuf(res);
       inputArea.setText(input);
-    } catch (ArrayIndexOutOfBoundsException ex) {
+    } catch (JsonProcessingException ex) {
       System.err.println(ex);
     }
     lockActions.setLock(false);

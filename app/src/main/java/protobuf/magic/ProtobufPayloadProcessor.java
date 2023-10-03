@@ -3,6 +3,7 @@ package protobuf.magic;
 import static burp.api.montoya.intruder.PayloadProcessingResult.usePayload;
 
 import burp.api.montoya.MontoyaApi;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.intruder.PayloadData;
 import burp.api.montoya.intruder.PayloadProcessingResult;
@@ -31,7 +32,7 @@ public class ProtobufPayloadProcessor implements PayloadProcessor {
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
       output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (InsufficientResourcesException e) {
+    } catch (JsonProcessingException | InsufficientResourcesException e) {
       logging.logToError(e);
       output = "Insufficient resources";
     }
