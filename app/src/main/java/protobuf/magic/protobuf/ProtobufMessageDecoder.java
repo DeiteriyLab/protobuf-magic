@@ -12,8 +12,7 @@ import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufMessageDecoder {
-  public static Protobuf decodeProto(byte[] buffer)
-      throws InsufficientResourcesException {
+  public static Protobuf decodeProto(byte[] buffer) throws InsufficientResourcesException {
 
     BufferReader reader = new BufferReader(buffer);
     List<ProtobufField> parts = new ArrayList<>();
@@ -35,16 +34,15 @@ public class ProtobufMessageDecoder {
 
         byteRange = appendToArray(byteRange, reader.getOffset());
         ProtobufFieldValue field =
-            new ProtobufFieldValue(ProtobufFieldType.fromValue(type),
-                                   value.getBytes(Charset.forName("UTF-8")));
+            new ProtobufFieldValue(
+                ProtobufFieldType.fromValue(type), value.getBytes(Charset.forName("UTF-8")));
         parts.add(new ProtobufField(byteRange, index, field));
       }
     } catch (UnknownTypeException err) {
       reader.resetToCheckpoint();
     }
 
-    return new Protobuf(parts, reader.readBuffer(reader.leftBytes()),
-                        leftBytes);
+    return new Protobuf(parts, reader.readBuffer(reader.leftBytes()), leftBytes);
   }
 
   private static String readValueBasedOnType(BufferReader reader, int type)
@@ -52,17 +50,17 @@ public class ProtobufMessageDecoder {
     ProtobufFieldType fieldType = ProtobufFieldType.fromValue(type);
 
     switch (fieldType) {
-    case VARINT:
-      return reader.readVarInt().toString();
-    case LEN:
-      BigInteger length = reader.readVarInt();
-      return new String(reader.readBuffer(length.intValue()));
-    case I32:
-      return new String(reader.readBuffer(4));
-    case I64:
-      return new String(reader.readBuffer(8));
-    default:
-      throw new UnknownTypeException("Unknown type: " + fieldType.getName());
+      case VARINT:
+        return reader.readVarInt().toString();
+      case LEN:
+        BigInteger length = reader.readVarInt();
+        return new String(reader.readBuffer(length.intValue()));
+      case I32:
+        return new String(reader.readBuffer(4));
+      case I64:
+        return new String(reader.readBuffer(8));
+      default:
+        throw new UnknownTypeException("Unknown type: " + fieldType.getName());
     }
   }
 

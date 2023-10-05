@@ -12,29 +12,28 @@ public class ProtoDecoderUtils {
   public static ProtobufFieldValue[] decodeFixed32(byte[] value) {
     ProtobufFieldValue[] result = new ProtobufFieldValue[3];
 
-    ByteBuffer bufferFloat =
-        ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    ByteBuffer bufferFloat = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     float floatValue = bufferFloat.getFloat();
-    result[2] = new ProtobufFieldValue(
-        ProtobufFieldType.I64,
-        String.format("%.16f", floatValue).getBytes(Charset.forName("UTF-8")));
-    ByteBuffer bufferInt =
-        ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    result[2] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.I64,
+            String.format("%.16f", floatValue).getBytes(Charset.forName("UTF-8")));
+    ByteBuffer bufferInt = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     int intValue = bufferInt.getInt();
-    result[0] = new ProtobufFieldValue(
-        ProtobufFieldType.VARINT,
-        String.valueOf(intValue).getBytes(Charset.forName("UTF-8")));
+    result[0] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.VARINT, String.valueOf(intValue).getBytes(Charset.forName("UTF-8")));
 
-    ByteBuffer bufferUint =
-        ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
+    ByteBuffer bufferUint = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN);
     long uintValue = bufferUint.getInt() & 0xffffffffL;
     // Should not return Unsigned Int result when Int is not negative
     if (intValue >= 0) {
       result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, null);
     } else {
-      result[1] = new ProtobufFieldValue(
-          ProtobufFieldType.VARINT,
-          String.valueOf(uintValue).getBytes(Charset.forName("UTF-8")));
+      result[1] =
+          new ProtobufFieldValue(
+              ProtobufFieldType.VARINT,
+              String.valueOf(uintValue).getBytes(Charset.forName("UTF-8")));
     }
 
     return result;
@@ -47,20 +46,21 @@ public class ProtoDecoderUtils {
     long uintValue = buffer.getLong();
 
     ProtobufFieldValue[] result = new ProtobufFieldValue[3];
-    result[0] = new ProtobufFieldValue(
-        ProtobufFieldType.VARINT,
-        String.valueOf(uintValue).getBytes(Charset.forName("UTF-8")));
+    result[0] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.VARINT, String.valueOf(uintValue).getBytes(Charset.forName("UTF-8")));
     // Check if uintValue is negative. If not, set unsigned integer to null.
     if (uintValue >= 0) {
       result[1] = new ProtobufFieldValue(ProtobufFieldType.VARINT, null);
     } else {
-      result[1] = new ProtobufFieldValue(
-          ProtobufFieldType.VARINT,
-          Long.toUnsignedString(uintValue).getBytes(Charset.forName("UTF-8")));
+      result[1] =
+          new ProtobufFieldValue(
+              ProtobufFieldType.VARINT,
+              Long.toUnsignedString(uintValue).getBytes(Charset.forName("UTF-8")));
     }
-    result[2] = new ProtobufFieldValue(
-        ProtobufFieldType.I64,
-        String.valueOf(floatValue).getBytes(Charset.forName("UTF-8")));
+    result[2] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.I64, String.valueOf(floatValue).getBytes(Charset.forName("UTF-8")));
 
     return result;
   }
@@ -72,12 +72,13 @@ public class ProtoDecoderUtils {
     int signedValue = (rawValue >> 1) ^ (-(rawValue & 1));
 
     ProtobufFieldValue[] result = new ProtobufFieldValue[2];
-    result[0] = new ProtobufFieldValue(
-        ProtobufFieldType.VARINT,
-        String.valueOf(rawValue).getBytes(Charset.forName("UTF-8")));
-    result[1] = new ProtobufFieldValue(
-        ProtobufFieldType.VARINT,
-        String.valueOf(signedValue).getBytes(Charset.forName("UTF-8")));
+    result[0] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.VARINT, String.valueOf(rawValue).getBytes(Charset.forName("UTF-8")));
+    result[1] =
+        new ProtobufFieldValue(
+            ProtobufFieldType.VARINT,
+            String.valueOf(signedValue).getBytes(Charset.forName("UTF-8")));
 
     return result;
   }
@@ -94,8 +95,8 @@ public class ProtoDecoderUtils {
       // Return a Protobuf object with type TYPES.BYTES and value "Byte
       // representation"
       String message = "Byte representation";
-      return new ProtobufFieldValue(ProtobufFieldType.LEN,
-                                    message.getBytes(Charset.forName("UTF-8")));
+      return new ProtobufFieldValue(
+          ProtobufFieldType.LEN, message.getBytes(Charset.forName("UTF-8")));
     } else {
       return new ProtobufFieldValue(
           ProtobufFieldType.LEN, textValue.getBytes(Charset.forName("UTF-8")));

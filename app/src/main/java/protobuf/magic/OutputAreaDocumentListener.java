@@ -1,11 +1,11 @@
 package protobuf.magic;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.struct.Protobuf;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea outputArea;

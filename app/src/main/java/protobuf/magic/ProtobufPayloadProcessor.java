@@ -3,11 +3,11 @@ package protobuf.magic;
 import static burp.api.montoya.intruder.PayloadProcessingResult.usePayload;
 
 import burp.api.montoya.MontoyaApi;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.intruder.PayloadData;
 import burp.api.montoya.intruder.PayloadProcessingResult;
 import burp.api.montoya.intruder.PayloadProcessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.naming.InsufficientResourcesException;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 

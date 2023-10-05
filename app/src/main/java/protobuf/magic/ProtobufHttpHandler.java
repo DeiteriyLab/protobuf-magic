@@ -21,8 +21,7 @@ class ProtobufHttpHandler implements HttpHandler {
   public ProtobufHttpHandler(MontoyaApi api) {}
 
   @Override
-  public RequestToBeSentAction
-  handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
+  public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
     if (!hasProtobuf(requestToBeSent.headers())) {
       return continueWith(requestToBeSent);
     }
@@ -34,8 +33,7 @@ class ProtobufHttpHandler implements HttpHandler {
   }
 
   @Override
-  public ResponseReceivedAction
-  handleHttpResponseReceived(HttpResponseReceived responseReceived) {
+  public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived responseReceived) {
     if (!hasProtobuf(responseReceived.headers())) {
       return continueWith(responseReceived);
     }
@@ -46,9 +44,10 @@ class ProtobufHttpHandler implements HttpHandler {
   private static boolean hasProtobuf(List<HttpHeader> headers) {
     Optional<?> contentTypeHeader =
         headers.stream()
-            .filter(h
-                    -> h.name().equalsIgnoreCase("Content-Type") &&
-                           h.value().startsWith("application/grpc-web-text"))
+            .filter(
+                h ->
+                    h.name().equalsIgnoreCase("Content-Type")
+                        && h.value().startsWith("application/grpc-web-text"))
             .findFirst();
 
     return contentTypeHeader.isPresent();

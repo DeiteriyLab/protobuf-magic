@@ -1,9 +1,9 @@
 package protobuf.magic;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.naming.InsufficientResourcesException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.swing.event.DocumentListener;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 

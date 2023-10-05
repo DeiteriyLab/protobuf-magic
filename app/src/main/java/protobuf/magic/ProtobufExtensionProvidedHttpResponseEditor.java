@@ -19,18 +19,15 @@ import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 import protobuf.magic.struct.Protobuf;
 
-class ProtobufExtensionProvidedHttpResponseEditor
-    implements ExtensionProvidedHttpResponseEditor {
-  private final Logger logging =
-      new Logger(ProtobufExtensionProvidedHttpResponseEditor.class);
+class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHttpResponseEditor {
+  private final Logger logging = new Logger(ProtobufExtensionProvidedHttpResponseEditor.class);
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
 
   ProtobufExtensionProvidedHttpResponseEditor(
       MontoyaApi api, EditorCreationContext creationContext) {
     if (creationContext.editorMode() == EditorMode.READ_ONLY) {
-      requestEditor =
-          api.userInterface().createRawEditor(EditorOptions.READ_ONLY);
+      requestEditor = api.userInterface().createRawEditor(EditorOptions.READ_ONLY);
     } else {
       requestEditor = api.userInterface().createRawEditor();
     }
@@ -50,8 +47,7 @@ class ProtobufExtensionProvidedHttpResponseEditor
       }
       String output = ProtobufEncoder.encodeToProtobuf(payload);
 
-      request =
-          requestResponse.response().withBody(ByteArray.byteArray(output));
+      request = requestResponse.response().withBody(ByteArray.byteArray(output));
     } else {
       request = requestResponse.response();
     }
@@ -68,8 +64,7 @@ class ProtobufExtensionProvidedHttpResponseEditor
     String output;
 
     try {
-      Protobuf payload =
-          ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
+      Protobuf payload = ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
       output = ProtobufHumanConvertor.encodeToHuman(payload);
     } catch (InsufficientResourcesException | JsonProcessingException e) {
       logging.logToError(e);
@@ -93,9 +88,10 @@ class ProtobufExtensionProvidedHttpResponseEditor
     }
 
     return headers.stream()
-        .filter(h
-                -> h.name().equalsIgnoreCase("Content-Type") &&
-                       h.value().contains("application/grpc-web-text"))
+        .filter(
+            h ->
+                h.name().equalsIgnoreCase("Content-Type")
+                    && h.value().contains("application/grpc-web-text"))
         .findFirst()
         .isPresent();
   }
@@ -112,9 +108,7 @@ class ProtobufExtensionProvidedHttpResponseEditor
 
   @Override
   public Selection selectedData() {
-    return requestEditor.selection().isPresent()
-        ? requestEditor.selection().get()
-        : null;
+    return requestEditor.selection().isPresent() ? requestEditor.selection().get() : null;
   }
 
   @Override

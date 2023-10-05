@@ -6,11 +6,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import javax.naming.InsufficientResourcesException;
 import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
+import protobuf.magic.protobuf.VarintUtils;
 import protobuf.magic.struct.Protobuf;
 import protobuf.magic.struct.ProtobufField;
 import protobuf.magic.struct.ProtobufFieldType;
@@ -25,27 +26,37 @@ public class ProtobufHumanConvertor {
     JsonNode jsonNode = objectMapper.readTree(humanJson);
     return decodeJsonToProtobuf(jsonNode);
   }
-  public static String encodeToHuman(Protobuf protobuf)
-      throws JsonProcessingException {
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-        encodeProtobufToJson(protobuf));
+
+  public static String encodeToHuman(Protobuf protobuf) throws JsonProcessingException {
+    return objectMapper
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(encodeProtobufToJson(protobuf));
   }
 
   private static Protobuf decodeJsonToProtobuf(JsonNode jsonNode) {
     List<ProtobufField> fields = new ArrayList<>();
-    jsonNode.forEach(fieldNode -> {
-      int index = fieldNode.get("index").asInt();
-      ProtobufFieldType type = ProtobufFieldType.LEN;
-      byte[] value = "INVALID".getBytes();
-      try {
-        type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
-        value = fieldNode.get("value").asText().getBytes("UTF-8");
-      } catch (UnknownTypeException | IOException e) {
-        e.printStackTrace();
-      }
-      fields.add(new ProtobufField(new int[0], index,
-                                   new ProtobufFieldValue(type, value)));
-    });
+    jsonNode.forEach(
+        fieldNode -> {
+          int index = fieldNode.get("index").asInt();
+          ProtobufFieldType type = ProtobufFieldType.LEN;
+          byte[] value = "INVALID".getBytes();
+          try {
+            type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
+
+            if (type == ProtobufFieldType.VARINT) {
+              JsonNode valueNode = fieldNode.get("value");
+              if (valueNode.has("int")) {
+                BigInteger iint = new BigInteger(valueNode.get("int").asText());
+                value = iint.toString().getBytes();
+              }
+            } else {
+              value = fieldNode.get("value").asText().getBytes("UTF-8");
+            }
+          } catch (UnknownTypeException | IOException e) {
+            e.printStackTrace();
+          }
+          fields.add(new ProtobufField(new int[0], index, new ProtobufFieldValue(type, value)));
+        });
     return new Protobuf(fields, new byte[0], 0);
   }
 
@@ -64,10 +75,18 @@ public class ProtobufHumanConvertor {
     if (field.getType() == ProtobufFieldType.LEN) {
       String val = new String(field.getValue());
       try {
-        Protobuf attachment =
-            ProtobufMessageDecoder.decodeProto(field.getValue());
+        Protobuf attachment = ProtobufMessageDecoder.decodeProto(field.getValue());
         value = encodeProtobufToJson(attachment);
       } catch (Exception e) {
+        value = val;
+      }
+    } else if (field.getType() == ProtobufFieldType.VARINT) {
+      String val = new String(field.getValue());
+      try {
+        BigInteger iint = new BigInteger(val);
+        BigInteger sint = VarintUtils.interpretAsSignedType(iint);
+        value = objectMapper.createObjectNode().put("sint", iint).put("int", sint);
+      } catch (NumberFormatException e) {
         value = val;
       }
     } else {
@@ -78,7 +97,8 @@ public class ProtobufHumanConvertor {
       }
     }
 
-    return objectMapper.createObjectNode()
+    return objectMapper
+        .createObjectNode()
         .put("index", field.getIndex())
         .put("type", type)
         .putPOJO("value", value);
