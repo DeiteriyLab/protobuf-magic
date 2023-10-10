@@ -4,12 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.protobuf.ProtobufEncoder;
 import protobuf.magic.protobuf.ProtobufMessageDecoder;
 import protobuf.magic.protobuf.VarintUtils;
@@ -20,16 +18,10 @@ import protobuf.magic.struct.ProtobufFieldValue;
 
 public class ProtobufHumanConvertor {
   private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static JsonNode prevJson;
 
   public static Protobuf decodeFromHuman(String humanJson)
       throws JsonMappingException, JsonProcessingException {
     JsonNode jsonNode = objectMapper.readTree(humanJson);
-    if (prevJson == null) {
-      prevJson = jsonNode;
-    }
-    jsonNode = JsonUpdater.updateProtobufFromJson(prevJson, jsonNode);
-    prevJson = jsonNode;
     return decodeJsonToProtobuf(jsonNode);
   }
 
@@ -66,7 +58,7 @@ public class ProtobufHumanConvertor {
             } else {
               value = fieldNode.get("value").asText().getBytes("UTF-8");
             }
-          } catch (UnknownTypeException | IOException e) {
+          } catch (Exception e) {
             e.printStackTrace();
           }
           fields.add(new ProtobufField(new int[0], index, new ProtobufFieldValue(type, value)));
