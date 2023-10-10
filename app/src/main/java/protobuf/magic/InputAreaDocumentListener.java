@@ -32,7 +32,7 @@ public class InputAreaDocumentListener implements DocumentListener {
     String output;
     try {
       var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
+      output = ProtobufHumanConvertor.encodeToHuman(protobuf);
     } catch (JsonProcessingException | InsufficientResourcesException ex) {
       logging.logToError(ex);
       output = "Insufficient resources";
