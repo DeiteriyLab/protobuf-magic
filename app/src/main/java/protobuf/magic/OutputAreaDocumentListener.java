@@ -23,8 +23,7 @@ public class OutputAreaDocumentListener implements DocumentListener {
 
   @Override
   public void insertUpdate(DocumentEvent e) {
-    if (lockActions.isLock())
-      return;
+    if (lockActions.isLock()) return;
     lockActions.setLock(true);
     String output = outputArea.getText();
     try {
@@ -35,8 +34,7 @@ public class OutputAreaDocumentListener implements DocumentListener {
         prev = jsonNode;
       }
       jsonNode = JsonUpdater.updateProtobufFromJson(prev, jsonNode);
-      output = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-          jsonNode);
+      output = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
       outputArea.setText(output);
       inputArea.setText(input);
     } catch (JsonProcessingException ex) {
