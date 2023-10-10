@@ -68,11 +68,13 @@ public class ProtobufEncoder {
   }
 
   public static String encodeToProtobuf(Protobuf res) {
+    System.err.println(res.toString());
     DynamicSchema schema;
     try {
       schema = createDynamicSchema(res);
     } catch (DescriptorValidationException e) {
-      throw new RuntimeException(e);
+      e.printStackTrace();
+      return "";
     }
     DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
@@ -107,7 +109,7 @@ public class ProtobufEncoder {
       case VARINT:
         return value;
       case LEN:
-        return ByteString.copyFrom(Base64.getDecoder().decode(value));
+        return ByteString.copyFrom(value);
       case I64:
         return Long.parseLong(new String(value));
       case I32:
