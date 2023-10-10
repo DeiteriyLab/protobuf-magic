@@ -33,45 +33,44 @@ public class ProtobufHumanConvertor {
     return decodeJsonToProtobuf(jsonNode);
   }
 
-  public static String encodeToHuman(Protobuf protobuf)
-      throws JsonProcessingException {
-    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-        encodeProtobufToJson(protobuf));
+  public static String encodeToHuman(Protobuf protobuf) throws JsonProcessingException {
+    return objectMapper
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(encodeProtobufToJson(protobuf));
   }
 
   private static Protobuf decodeJsonToProtobuf(JsonNode jsonNode) {
     List<ProtobufField> fields = new ArrayList<>();
-    jsonNode.forEach(fieldNode -> {
-      int index = fieldNode.get("index").asInt();
-      ProtobufFieldType type = ProtobufFieldType.LEN;
-      byte[] value = "INVALID".getBytes();
-      try {
-        type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
+    jsonNode.forEach(
+        fieldNode -> {
+          int index = fieldNode.get("index").asInt();
+          ProtobufFieldType type = ProtobufFieldType.LEN;
+          byte[] value = "INVALID".getBytes();
+          try {
+            type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
 
-        if (type == ProtobufFieldType.VARINT) {
-          JsonNode valueNode = fieldNode.get("value");
-          if (valueNode.has("int")) {
-            BigInteger iint = new BigInteger(valueNode.get("int").asText());
-            value = iint.toString().getBytes();
+            if (type == ProtobufFieldType.VARINT) {
+              JsonNode valueNode = fieldNode.get("value");
+              if (valueNode.has("int")) {
+                BigInteger iint = new BigInteger(valueNode.get("int").asText());
+                value = iint.toString().getBytes();
+              }
+            } else if (type == ProtobufFieldType.LEN) {
+              var valNode = fieldNode.get("value");
+              if (valNode.isTextual()) {
+                value = valNode.asText().getBytes("UTF-8");
+              } else if (valNode.isArray()) {
+                Protobuf attachment = decodeJsonToProtobuf(valNode);
+                value = ProtobufEncoder.encodeToProtobuf(attachment).getBytes("UTF-8");
+              }
+            } else {
+              value = fieldNode.get("value").asText().getBytes("UTF-8");
+            }
+          } catch (UnknownTypeException | IOException e) {
+            e.printStackTrace();
           }
-        } else if (type == ProtobufFieldType.LEN) {
-          var valNode = fieldNode.get("value");
-          if (valNode.isTextual()) {
-            value = valNode.asText().getBytes("UTF-8");
-          } else if (valNode.isArray()) {
-            Protobuf attachment = decodeJsonToProtobuf(valNode);
-            value =
-                ProtobufEncoder.encodeToProtobuf(attachment).getBytes("UTF-8");
-          }
-        } else {
-          value = fieldNode.get("value").asText().getBytes("UTF-8");
-        }
-      } catch (UnknownTypeException | IOException e) {
-        e.printStackTrace();
-      }
-      fields.add(new ProtobufField(new int[0], index,
-                                   new ProtobufFieldValue(type, value)));
-    });
+          fields.add(new ProtobufField(new int[0], index, new ProtobufFieldValue(type, value)));
+        });
     return new Protobuf(fields, new byte[0], 0);
   }
 
@@ -90,8 +89,7 @@ public class ProtobufHumanConvertor {
     if (field.getType() == ProtobufFieldType.LEN) {
       value = new String(field.getValue());
       try {
-        Protobuf attachment =
-            ProtobufMessageDecoder.decodeProto(field.getValue());
+        Protobuf attachment = ProtobufMessageDecoder.decodeProto(field.getValue());
         if (attachment.getLeftOver().length == 0) {
           value = encodeProtobufToJson(attachment);
         }
@@ -103,8 +101,7 @@ public class ProtobufHumanConvertor {
       try {
         BigInteger iint = new BigInteger(val);
         BigInteger sint = VarintUtils.interpretAsSignedType(iint);
-        value =
-            objectMapper.createObjectNode().put("sint", iint).put("int", sint);
+        value = objectMapper.createObjectNode().put("sint", iint).put("int", sint);
       } catch (NumberFormatException e) {
         value = val;
       }
@@ -116,7 +113,8 @@ public class ProtobufHumanConvertor {
       }
     }
 
-    return objectMapper.createObjectNode()
+    return objectMapper
+        .createObjectNode()
         .put("index", field.getIndex())
         .put("type", type)
         .putPOJO("value", value);
