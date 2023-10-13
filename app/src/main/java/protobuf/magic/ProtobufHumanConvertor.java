@@ -25,44 +25,41 @@ public class ProtobufHumanConvertor {
     return decodeJsonToProtobuf(jsonNode);
   }
 
-  public static String encodeToHuman(Protobuf protobuf) throws JsonProcessingException {
-    return objectMapper
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(encodeProtobufToJson(protobuf));
+  public static String encodeToHuman(Protobuf protobuf)
+      throws JsonProcessingException {
+    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
+        encodeProtobufToJson(protobuf));
   }
 
   private static Protobuf decodeJsonToProtobuf(JsonNode jsonNode) {
     List<ProtobufField> fields = new ArrayList<>();
-    jsonNode.forEach(
-        fieldNode -> {
-          int index = fieldNode.get("index").asInt();
-          ProtobufFieldType type = ProtobufFieldType.LEN;
-          byte[] value = "INVALID".getBytes();
-          try {
-            type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
+    int index = 0;
+    for(int i = 0; i < jsonNode.size(); i++) {
+      var fieldNode = jsonNode.get(i);
+      index = i + 1;
+      ProtobufFieldType type = ProtobufFieldType.LEN;
+      byte[] value = "INVALID".getBytes();
+      try {
+        type = ProtobufFieldType.fromName(fieldNode.get("type").asText());
 
-            if (type == ProtobufFieldType.VARINT) {
-              JsonNode valueNode = fieldNode.get("value");
-              if (valueNode.has("int")) {
-                BigInteger iint = new BigInteger(valueNode.get("int").asText());
-                value = iint.toString().getBytes();
-              }
-            } else if (type == ProtobufFieldType.LEN) {
-              var valNode = fieldNode.get("value");
-              if (valNode.isTextual()) {
-                value = valNode.asText().getBytes("UTF-8");
-              } else if (valNode.isArray()) {
-                Protobuf attachment = decodeJsonToProtobuf(valNode);
-                value = ProtobufEncoder.encodeToProtobuf(attachment).getBytes("UTF-8");
-              }
-            } else {
-              value = fieldNode.get("value").asText().getBytes("UTF-8");
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
+        if (type == ProtobufFieldType.LEN) {
+          var valNode = fieldNode.get("value");
+          if (valNode.isTextual()) {
+            value = valNode.asText().getBytes("UTF-8");
+          } else if (valNode.isArray()) {
+            Protobuf attachment = decodeJsonToProtobuf(valNode);
+            value =
+                ProtobufEncoder.encodeToProtobuf(attachment).getBytes("UTF-8");
           }
-          fields.add(new ProtobufField(new int[0], index, new ProtobufFieldValue(type, value)));
-        });
+        } else {
+          value = fieldNode.get("value").asText().getBytes("UTF-8");
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      fields.add(new ProtobufField(new int[0], index,
+                                   new ProtobufFieldValue(type, value)));
+    }
     return new Protobuf(fields, new byte[0], 0);
   }
 
@@ -81,7 +78,8 @@ public class ProtobufHumanConvertor {
     if (field.getType() == ProtobufFieldType.LEN) {
       value = new String(field.getValue());
       try {
-        Protobuf attachment = ProtobufMessageDecoder.decodeProto(field.getValue());
+        Protobuf attachment =
+            ProtobufMessageDecoder.decodeProto(field.getValue());
         if (attachment.getLeftOver().length == 0) {
           value = encodeProtobufToJson(attachment);
         }
@@ -89,14 +87,7 @@ public class ProtobufHumanConvertor {
         System.err.println(e);
       }
     } else if (field.getType() == ProtobufFieldType.VARINT) {
-      String val = new String(field.getValue());
-      try {
-        BigInteger iint = new BigInteger(val);
-        BigInteger sint = VarintUtils.interpretAsSignedType(iint);
-        value = objectMapper.createObjectNode().put("sint", iint).put("int", sint);
-      } catch (NumberFormatException e) {
-        value = val;
-      }
+      value = new BigInteger(field.getValue());
     } else {
       try {
         value = new String(field.getValue(), "UTF-8");
@@ -105,8 +96,7 @@ public class ProtobufHumanConvertor {
       }
     }
 
-    return objectMapper
-        .createObjectNode()
+    return objectMapper.createObjectNode()
         .put("index", field.getIndex())
         .put("type", type)
         .putPOJO("value", value);

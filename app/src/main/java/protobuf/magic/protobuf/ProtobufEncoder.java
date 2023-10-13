@@ -67,14 +67,13 @@ public class ProtobufEncoder {
     return "pseudo_" + Integer.toHexString(base);
   }
 
-  public static String encodeToProtobuf(Protobuf res) {
-    System.err.println(res.toString());
+  public static byte[] encodeToProtobuf(Protobuf res, int depth) {
     DynamicSchema schema;
     try {
       schema = createDynamicSchema(res);
     } catch (DescriptorValidationException e) {
       e.printStackTrace();
-      return "";
+      return null;
     }
     DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
@@ -95,6 +94,10 @@ public class ProtobufEncoder {
     }
     DynamicMessage msg = msgBuilder.build();
     byte[] msgBytes = msg.toByteArray();
+    return msgBytes;
+  }
+  public static String encodeToProtobuf(Protobuf res) {
+      byte[] msgBytes = encodeToProtobuf(res, 0);
     msgBytes = LeftOverBytesAppender.appendLeftOverBytes(res.getLenLeftOver(), msgBytes);
     return encodeToBase64(msgBytes);
   }
