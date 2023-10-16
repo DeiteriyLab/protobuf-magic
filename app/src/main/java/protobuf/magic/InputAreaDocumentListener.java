@@ -1,17 +1,18 @@
 package protobuf.magic;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import javax.naming.InsufficientResourcesException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
+import lombok.CustomLog;
+import protobuf.magic.converter.Converter;
+import protobuf.magic.converter.HumanReadableToBinary;
 
+@CustomLog
 public class InputAreaDocumentListener implements DocumentListener {
-  private static final Logger logging = new Logger(InputAreaDocumentListener.class);
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private LockActions lockActions = new LockActions();
+  private Converter<String, String> converter = new HumanReadableToBinary();
 
   public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea) {
     this.inputArea = inputArea;
@@ -22,22 +23,10 @@ public class InputAreaDocumentListener implements DocumentListener {
   public void insertUpdate(DocumentEvent e) {
     if (lockActions.isLock()) return;
     lockActions.setLock(true);
-    String input = inputArea.getText();
-    byte[] bytes = new byte[0];
-    try {
-      bytes = EncodingUtils.parseInput(input);
-    } catch (StringIndexOutOfBoundsException ex) {
-      logging.logToError(ex);
-    }
-    String output;
-    try {
-      var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufHumanConvertor.encodeToHuman(protobuf);
-    } catch (JsonProcessingException | InsufficientResourcesException ex) {
-      logging.logToError(ex);
-      output = "Insufficient resources";
-    }
+
+    String output = converter.convertFromEntity(inputArea.getText());
     outputArea.setText(output);
+
     lockActions.setLock(false);
   }
 

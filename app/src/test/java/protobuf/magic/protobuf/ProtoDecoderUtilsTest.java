@@ -6,8 +6,8 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import protobuf.magic.EncodingUtils;
-import protobuf.magic.struct.ProtobufFieldType;
 import protobuf.magic.struct.ProtobufFieldValue;
+import protobuf.magic.struct.Type;
 
 public class ProtoDecoderUtilsTest {
 
@@ -56,11 +56,11 @@ public class ProtoDecoderUtilsTest {
         ProtoDecoderUtils.decodeStringOrBytes(
             "normal ascii input".getBytes(StandardCharsets.UTF_8));
     assertEquals("normal ascii input", result.getValue());
-    assertEquals(ProtobufFieldType.STRING, result.getType());
+    assertEquals(Type.STRING, result.getType());
 
     result = ProtoDecoderUtils.decodeStringOrBytes(new byte[] {0, -128, -1});
     assertEquals("Byte representation", result.getValue());
-    assertEquals(ProtobufFieldType.BYTES, result.getType());
+    assertEquals(Type.BYTES, result.getType());
 
     result = ProtoDecoderUtils.decodeStringOrBytes(new byte[] {});
     assertEquals("", result.getValue());

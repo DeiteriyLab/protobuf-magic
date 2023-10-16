@@ -11,18 +11,15 @@ import burp.api.montoya.ui.editor.RawEditor;
 import burp.api.montoya.ui.editor.extension.EditorCreationContext;
 import burp.api.montoya.ui.editor.extension.EditorMode;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpResponseEditor;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.awt.Component;
 import java.util.List;
-import javax.naming.InsufficientResourcesException;
-import protobuf.magic.protobuf.ProtobufEncoder;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
-import protobuf.magic.struct.Protobuf;
+import protobuf.magic.converter.Converter;
+import protobuf.magic.converter.HumanReadableToBinary;
 
 class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHttpResponseEditor {
-  private final Logger logging = new Logger(ProtobufExtensionProvidedHttpResponseEditor.class);
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
+  private static final Converter<String, String> converter = new HumanReadableToBinary();
 
   ProtobufExtensionProvidedHttpResponseEditor(
       MontoyaApi api, EditorCreationContext creationContext) {
@@ -39,15 +36,9 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      Protobuf payload = null;
-      try {
-        payload = ProtobufHumanConvertor.decodeFromHuman(content);
-      } catch (JsonProcessingException e) {
-        logging.logToError(e);
-      }
-      String output = ProtobufEncoder.encodeToProtobuf(payload);
+      String output = converter.convertFromDTO(content);
 
-      request = requestResponse.response().withBody(ByteArray.byteArray(output));
+      request = requestResponse.response().withBody(output);
     } else {
       request = requestResponse.response();
     }
@@ -61,15 +52,7 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     ByteArray bodyValue = requestResponse.request().body();
     String body = bodyValue.toString();
-    String output;
-
-    try {
-      Protobuf payload = ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
-      output = ProtobufHumanConvertor.encodeToHuman(payload);
-    } catch (InsufficientResourcesException | JsonProcessingException e) {
-      logging.logToError(e);
-      output = "Insufficient resources";
-    }
+    String output = converter.convertFromDTO(body);
 
     this.requestEditor.setContents(ByteArray.byteArray(output));
   }

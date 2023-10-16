@@ -1,16 +1,16 @@
 package protobuf.magic;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import protobuf.magic.protobuf.ProtobufEncoder;
-import protobuf.magic.struct.Protobuf;
+import protobuf.magic.converter.Converter;
+import protobuf.magic.converter.HumanReadableToBinary;
 
 public class OutputAreaDocumentListener implements DocumentListener {
   private final JTextArea outputArea;
   private final JTextArea inputArea;
   private LockActions lockActions = new LockActions();
+  private Converter<String, String> converter = new HumanReadableToBinary();
 
   public OutputAreaDocumentListener(JTextArea outputArea, JTextArea inputArea) {
     this.outputArea = outputArea;
@@ -21,14 +21,8 @@ public class OutputAreaDocumentListener implements DocumentListener {
   public void insertUpdate(DocumentEvent e) {
     if (lockActions.isLock()) return;
     lockActions.setLock(true);
-    String output = outputArea.getText();
-    try {
-      Protobuf res = ProtobufHumanConvertor.decodeFromHuman(output);
-      String input = ProtobufEncoder.encodeToProtobuf(res);
-      inputArea.setText(input);
-    } catch (JsonProcessingException ex) {
-      System.err.println(ex);
-    }
+    String input = converter.convertFromDTO(outputArea.getText());
+    inputArea.setText(input);
     lockActions.setLock(false);
   }
 

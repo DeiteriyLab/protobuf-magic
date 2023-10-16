@@ -13,7 +13,7 @@ import protobuf.magic.exception.UnknownTypeException;
  * reasonable to split this Enum into two separate ones - for varint types and non-varint types, It
  * helps to maintain the codebase and increases readability.
  */
-public enum ProtobufFieldType {
+public enum Type {
   VARINT(0, "VARINT"), // int32, int64, uint32, uint64, sint32, sint64, bool, enum
   I64(1, "I64"), // fixed64, sfixed64, double
   LEN(2, "LEN"), // string, bytes, embedded messages, packed repeated fields
@@ -24,7 +24,7 @@ public enum ProtobufFieldType {
   private final int value;
   private final String name;
 
-  ProtobufFieldType(int value, String name) {
+  Type(int value, String name) {
     this.value = value;
     this.name = name;
   }
@@ -45,21 +45,21 @@ public enum ProtobufFieldType {
    *     this value
    * @throws UnknownTypeException
    */
-  public static ProtobufFieldType fromValue(int value) throws UnknownTypeException {
-    for (ProtobufFieldType type : ProtobufFieldType.values()) {
+  public static Type fromValue(int value) throws UnknownTypeException {
+    for (Type type : Type.values()) {
       if (type.getValue() == value) {
         return type;
       }
     }
-    throw new UnknownTypeException("Unknown ProtobufFieldType: " + value);
+    throw new UnknownTypeException(Integer.toString(value));
   }
 
-  public static ProtobufFieldType fromName(String name) throws UnknownTypeException {
-    for (ProtobufFieldType type : ProtobufFieldType.values()) {
+  public static Type fromName(String name) throws UnknownTypeException {
+    for (Type type : Type.values()) {
       if (type.getName().equals(name)) {
         return type;
       }
     }
-    throw new UnknownTypeException("Unknown ProtobufFieldType: " + name);
+    throw new UnknownTypeException(name);
   }
 }

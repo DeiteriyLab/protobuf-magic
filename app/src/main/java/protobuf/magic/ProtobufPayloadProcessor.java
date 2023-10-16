@@ -7,13 +7,14 @@ import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.intruder.PayloadData;
 import burp.api.montoya.intruder.PayloadProcessingResult;
 import burp.api.montoya.intruder.PayloadProcessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import javax.naming.InsufficientResourcesException;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
+import lombok.CustomLog;
+import protobuf.magic.converter.Converter;
+import protobuf.magic.converter.HumanReadableToBinary;
 
+@CustomLog
 public class ProtobufPayloadProcessor implements PayloadProcessor {
   private final MontoyaApi api;
-  private final Logger logging = new Logger(ProtobufPayloadProcessor.class);
+  private static final Converter<String, String> converter = new HumanReadableToBinary();
 
   public ProtobufPayloadProcessor(MontoyaApi api) {
     this.api = api;
@@ -27,15 +28,7 @@ public class ProtobufPayloadProcessor implements PayloadProcessor {
   @Override
   public PayloadProcessingResult processPayload(PayloadData payloadData) {
     String input = payloadData.currentPayload().toString();
-    byte[] bytes = EncodingUtils.parseInput(input);
-    String output;
-    try {
-      var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (JsonProcessingException | InsufficientResourcesException e) {
-      logging.logToError(e);
-      output = "Insufficient resources";
-    }
+    String output = converter.convertFromDTO(input);
     return usePayload(ByteArray.byteArray(output));
   }
 }
