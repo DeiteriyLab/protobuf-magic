@@ -60,11 +60,15 @@ public class JsonConverter extends FormatConverter {
 
   private static DynamicProtobuf jsonToProtobuf(JsonNode jsonNode)
       throws UnknownTypeException {
+      log.debug(String.format("jsonToProtobuf get jsonNode %s", jsonNode));
     List<Field> fields = new ArrayList<>();
-    for (int i = 0; i < jsonNode.size(); i++) {
+    for (int i = 0; i < jsonNode.size(); ++i) {
       JsonNode fieldNode = jsonNode.get(i);
+      log.debug(String.format("jsonToProtobuf get fieldNode %s", fieldNode));
       int index = fieldNode.get("index").asInt();
-      Type type = Type.fromName(fieldNode.get("type").asText());
+      String stype = fieldNode.get("type").asText();
+      log.debug(String.format("jsonToProtobuf get stype %s", stype));
+      Type type = Type.fromName(stype);
       String value = decodeValueFromJson(fieldNode, type);
       fields.add(new Field(index, type, value));
     }
@@ -86,7 +90,7 @@ public class JsonConverter extends FormatConverter {
       throws UnknownTypeException {
     if (valNode.isTextual()) {
       return valNode.asText().getBytes();
-    } else if (valNode.isArray()) {
+    } else if (valNode.isArray() || valNode.isObject()) {
       DynamicProtobuf attachment = jsonToProtobuf(valNode);
       List<Byte> arr =
           Config.convertBinaryProtobuf().convertFromEntity(attachment);
@@ -96,7 +100,7 @@ public class JsonConverter extends FormatConverter {
       }
       return arrr;
     }
-    log.debug(String.format("Decoding error: %s", valNode));
+    log.error(String.format("Decoding error: %s", valNode));
     return INVALID.getBytes();
   }
 
@@ -137,9 +141,8 @@ public class JsonConverter extends FormatConverter {
     }
     DynamicProtobuf attachment =
         Config.convertBinaryProtobuf().convertFromDTO(bstr);
-    System.out.println("!!!!!!" + attachment.leftOver().length);
-    if (attachment.leftOver().length == 0) {
-      return protobufToJson(attachment);
+    if (bstr.size() > 0 && attachment.leftOver().length == 0) {
+      return attachment.fields();
     }
     return value;
   }

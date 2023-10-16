@@ -77,7 +77,7 @@ public class BinaryProtobufConverter
       Object value = mapperValue(field.type(), field.value());
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
       if (field.type() == Type.VARINT) {
-        value = Long.parseLong(new String((byte[])value));
+        value = Long.parseLong((String)value);
       }
       msgBuilder.setField(fieldDesc, value);
     }
@@ -164,7 +164,8 @@ public class BinaryProtobufConverter
     reader.trySkipGrpcHeader();
     processBuffer(reader, parts);
 
-    return new DynamicProtobuf(parts, buffer);
+    byte[] leftover = reader.readBuffer(reader.leftBytes());
+    return new DynamicProtobuf(parts, leftover);
   }
 
   private static byte[] toArray(List<Byte> bufferList) {
