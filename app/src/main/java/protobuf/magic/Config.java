@@ -1,20 +1,30 @@
 package protobuf.magic;
 
-import java.util.List;
 import lombok.experimental.UtilityClass;
-import protobuf.magic.converter.BinaryProtobufConverter;
-import protobuf.magic.converter.Converter;
-import protobuf.magic.converter.JsonConverter;
-import protobuf.magic.struct.DynamicProtobuf;
+import protobuf.magic.adapter.binary.AutoStringToBinary;
+import protobuf.magic.adapter.binary.StringToBinary;
+import protobuf.magic.adapter.exporter.ProtobufToHumanReadable;
+import protobuf.magic.adapter.exporter.ProtobufToJson;
+import protobuf.magic.adapter.importer.BinaryToProtobuf;
+import protobuf.magic.adapter.importer.HumanReadableToProtobuf;
+import protobuf.magic.adapter.importer.JsonToProtobuf;
 
 @UtilityClass
 public class Config {
-  public static Converter<String, DynamicProtobuf> convertHumanReadableProtobuf() {
-    return new JsonConverter();
+  public static ProtobufToHumanReadable convertProtobufToHumanReadable() {
+    return new ProtobufToJson();
   }
 
-  public static Converter<List<Byte>, DynamicProtobuf> convertBinaryProtobuf() {
-    return new BinaryProtobufConverter();
+  public static StringToBinary convertRawStringToBinary() {
+    return new AutoStringToBinary();
+  }
+
+  public static BinaryToProtobuf convertBinaryProtobuf() {
+    return new BinaryToProtobuf();
+  }
+
+  public static HumanReadableToProtobuf convertHumanReadableToProtobuf() {
+    return new JsonToProtobuf();
   }
 
   public static String extensionName() {

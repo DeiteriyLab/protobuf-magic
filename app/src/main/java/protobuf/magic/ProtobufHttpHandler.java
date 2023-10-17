@@ -14,12 +14,12 @@ import burp.api.montoya.http.message.requests.HttpRequest;
 import java.util.List;
 import java.util.Optional;
 import lombok.CustomLog;
-import protobuf.magic.converter.Converter;
-import protobuf.magic.converter.HumanReadableToBinary;
+import protobuf.magic.adapter.HumanReadableToBinary;
+import protobuf.magic.exception.UnknownStructException;
 
 @CustomLog
 class ProtobufHttpHandler implements HttpHandler {
-  private static final Converter<String, String> converter = new HumanReadableToBinary();
+  private static final HumanReadableToBinary converter = new HumanReadableToBinary();
 
   public ProtobufHttpHandler(MontoyaApi api) {}
 
@@ -29,7 +29,13 @@ class ProtobufHttpHandler implements HttpHandler {
       return continueWith(requestToBeSent);
     }
     String body = requestToBeSent.bodyToString();
-    String output = converter.convertFromDTO(body);
+    String output = "Unknown Exception";
+    try {
+      output = converter.convert(body);
+    } catch (UnknownStructException e) {
+      output = e.getMessage();
+      log.error(e);
+    }
 
     HttpRequest modifiedRequest = requestToBeSent.withBody(output);
     return continueWith(modifiedRequest);

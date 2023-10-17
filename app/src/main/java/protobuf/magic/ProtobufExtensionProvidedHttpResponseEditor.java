@@ -13,13 +13,15 @@ import burp.api.montoya.ui.editor.extension.EditorMode;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpResponseEditor;
 import java.awt.Component;
 import java.util.List;
-import protobuf.magic.converter.Converter;
-import protobuf.magic.converter.HumanReadableToBinary;
+import lombok.CustomLog;
+import protobuf.magic.adapter.HumanReadableToBinary;
+import protobuf.magic.exception.UnknownStructException;
 
+@CustomLog
 class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHttpResponseEditor {
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
-  private static final Converter<String, String> converter = new HumanReadableToBinary();
+  private static final HumanReadableToBinary converter = new HumanReadableToBinary();
 
   ProtobufExtensionProvidedHttpResponseEditor(
       MontoyaApi api, EditorCreationContext creationContext) {
@@ -36,7 +38,13 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      String output = converter.convertFromDTO(content);
+      String output;
+      try {
+        output = converter.convert(content);
+      } catch (UnknownStructException e) {
+        output = e.getMessage();
+        log.error(e);
+      }
 
       request = requestResponse.response().withBody(output);
     } else {
@@ -52,7 +60,13 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     ByteArray bodyValue = requestResponse.request().body();
     String body = bodyValue.toString();
-    String output = converter.convertFromDTO(body);
+    String output;
+    try {
+      output = converter.convert(body);
+    } catch (UnknownStructException e) {
+      output = e.getMessage();
+      log.error(e);
+    }
 
     this.requestEditor.setContents(ByteArray.byteArray(output));
   }

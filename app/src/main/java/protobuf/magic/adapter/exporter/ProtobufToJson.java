@@ -1,4 +1,4 @@
-package protobuf.magic.converter;
+package protobuf.magic.adapter.exporter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,39 +7,22 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.CustomLog;
-import protobuf.magic.Config;
-import protobuf.magic.exception.UnknownTypeException;
+import protobuf.magic.adapter.importer.BinaryToProtobuf;
+import protobuf.magic.exception.*;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
 
 @CustomLog
-public class JsonConverter extends FormatConverter {
+public class ProtobufToJson implements ProtobufToHumanReadable {
   private static final String INVALID = "INVALID";
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final ProtobufToBinary PROTOBUF_TO_BINARY = new ProtobufToBinary();
+  private static final BinaryToProtobuf BINARY_TO_PROTOBUF = new BinaryToProtobuf();
 
-  public JsonConverter() {
-    super(JsonConverter::stringToProtobuf, JsonConverter::protobufToString);
-  }
-
-  private static DynamicProtobuf stringToProtobuf(String str) {
-    JsonNode jsonNode = stringToJson(str);
-    try {
-      return jsonToProtobuf(jsonNode);
-    } catch (UnknownTypeException e) {
-      log.error(e);
-      Field field = new Field(0, Type.LEN, INVALID);
-      return new DynamicProtobuf(List.of(field), new byte[0]);
-    }
-  }
-
-  private static JsonNode stringToJson(String str) {
-    try {
-      return OBJECT_MAPPER.readTree(str);
-    } catch (JsonProcessingException e) {
-      log.error(e);
-      return null;
-    }
+  @Override
+  public String convert(DynamicProtobuf protobuf) {
+    return protobufToString(protobuf);
   }
 
   private static String protobufToString(DynamicProtobuf protobuf) {
@@ -56,23 +39,45 @@ public class JsonConverter extends FormatConverter {
     return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
   }
 
-  private static DynamicProtobuf jsonToProtobuf(JsonNode jsonNode) throws UnknownTypeException {
-    log.debug(String.format("jsonToProtobuf get jsonNode %s", jsonNode));
+  private static DynamicProtobuf jsonToProtobuf(JsonNode jsonNode)
+      throws UnknownTypeException, UnknownStructException {
     List<Field> fields = new ArrayList<>();
-    for (int i = 0; i < jsonNode.size(); ++i) {
-      JsonNode fieldNode = jsonNode.get(i);
-      log.debug(String.format("jsonToProtobuf get fieldNode %s", fieldNode));
-      int index = fieldNode.get("index").asInt();
-      String stype = fieldNode.get("type").asText();
-      log.debug(String.format("jsonToProtobuf get stype %s", stype));
-      Type type = Type.fromName(stype);
-      String value = decodeValueFromJson(fieldNode, type);
-      fields.add(new Field(index, type, value));
+    for (var field : jsonNode) {
+      if (checkValidField(field)) {
+        fields.add(decodeFieldFromJson(field));
+      } else {
+        throw new UnknownStructException("Unknown struct: " + jsonNode);
+      }
     }
     return new DynamicProtobuf(fields, new byte[0]);
   }
 
-  private static String decodeValueFromJson(JsonNode fieldNode, Type type) {
+  private static boolean checkValidField(JsonNode fieldNode) {
+    boolean has = fieldNode.has("index") && fieldNode.has("type") && fieldNode.has("value");
+    if (!has) return has;
+    boolean indexIsValid = true;
+    try {
+      int index = Integer.parseInt(fieldNode.get("index").asText());
+      indexIsValid = index >= 0;
+    } catch (NumberFormatException e) {
+      indexIsValid = false;
+      log.error(e);
+    }
+    boolean type = indexIsValid;
+    return has && type;
+  }
+
+  private static Field decodeFieldFromJson(JsonNode fieldNode)
+      throws UnknownTypeException, UnknownStructException {
+    int index = fieldNode.get("index").asInt();
+    String stype = fieldNode.get("type").asText();
+    Type type = Type.fromName(stype);
+    String value = decodeValueFromJson(fieldNode, type);
+    return new Field(index, type, value);
+  }
+
+  private static String decodeValueFromJson(JsonNode fieldNode, Type type)
+      throws UnknownStructException {
     JsonNode valNode = fieldNode.get("value");
     try {
       return (type == Type.LEN) ? new String(decodeLenDelim(valNode)) : valNode.asText();
@@ -82,12 +87,13 @@ public class JsonConverter extends FormatConverter {
     }
   }
 
-  private static byte[] decodeLenDelim(JsonNode valNode) throws UnknownTypeException {
+  private static byte[] decodeLenDelim(JsonNode valNode)
+      throws UnknownTypeException, UnknownStructException {
     if (valNode.isTextual()) {
       return valNode.asText().getBytes();
     } else if (valNode.isArray() || valNode.isObject()) {
       DynamicProtobuf attachment = jsonToProtobuf(valNode);
-      List<Byte> arr = Config.convertBinaryProtobuf().convertFromEntity(attachment);
+      List<Byte> arr = PROTOBUF_TO_BINARY.convert(attachment);
       byte[] arrr = new byte[arr.size()];
       for (int i = 0; i < arr.size(); i++) {
         arrr[i] = arr.get(i);
@@ -134,9 +140,13 @@ public class JsonConverter extends FormatConverter {
     for (int i = 0; i < str.length(); i++) {
       bstr.add((byte) str.charAt(i));
     }
-    DynamicProtobuf attachment = Config.convertBinaryProtobuf().convertFromDTO(bstr);
-    if (bstr.size() > 0 && attachment.leftOver().length == 0) {
-      return attachment.fields();
+    try {
+      DynamicProtobuf attachment = BINARY_TO_PROTOBUF.convert(bstr);
+      if (bstr.size() > 0 && attachment.leftOver().length == 0) {
+        return attachment.fields();
+      }
+    } catch (UnknownStructException e) {
+      log.error(e);
     }
     return value;
   }

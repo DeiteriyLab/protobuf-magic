@@ -3,16 +3,15 @@ package protobuf.magic;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import lombok.CustomLog;
-import protobuf.magic.converter.Converter;
-import protobuf.magic.converter.HumanReadableToBinary;
+import protobuf.magic.adapter.BinaryToHumanReadable;
+import protobuf.magic.exception.UnknownStructException;
 
-@CustomLog
 public class InputAreaDocumentListener implements DocumentListener {
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private LockActions lockActions = new LockActions();
-  private Converter<String, String> converter = new HumanReadableToBinary();
+  private static final BinaryToHumanReadable converter =
+      new BinaryToHumanReadable();
 
   public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea) {
     this.inputArea = inputArea;
@@ -20,11 +19,16 @@ public class InputAreaDocumentListener implements DocumentListener {
   }
 
   @Override
-  public void insertUpdate(DocumentEvent e) {
-    if (lockActions.isLock()) return;
+  public void insertUpdate(DocumentEvent event) {
+    if (lockActions.isLock())
+      return;
     lockActions.setLock(true);
-
-    String output = converter.convertFromEntity(inputArea.getText());
+    String output;
+    try {
+      output = converter.convert(inputArea.getText());
+    } catch (UnknownStructException e) {
+      output = e.getMessage();
+    }
     outputArea.setText(output);
 
     lockActions.setLock(false);

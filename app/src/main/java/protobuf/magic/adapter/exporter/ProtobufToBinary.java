@@ -1,4 +1,4 @@
-package protobuf.magic.converter;
+package protobuf.magic.adapter.exporter;
 
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
@@ -8,20 +8,18 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DynamicMessage;
 import java.util.ArrayList;
 import java.util.List;
-import javax.naming.InsufficientResourcesException;
 import lombok.CustomLog;
-import protobuf.magic.exception.UnknownTypeException;
-import protobuf.magic.protobuf.BufferReader;
+import protobuf.magic.adapter.Converter;
+import protobuf.magic.exception.UnknownStructException;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
 
 @CustomLog
-public class BinaryProtobufConverter extends Converter<List<Byte>, DynamicProtobuf> {
-  private static String INVALID = "INVALID";
-
-  public BinaryProtobufConverter() {
-    super(BinaryProtobufConverter::wrapBytesToProtobuf, BinaryProtobufConverter::protobufToBytes);
+public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> {
+  @Override
+  public List<Byte> convert(DynamicProtobuf protobuf) throws UnknownStructException {
+    return protobufToBytes(protobuf);
   }
 
   private static List<DynamicProtobuf> splitProtobuf(DynamicProtobuf proto) {
@@ -71,7 +69,12 @@ public class BinaryProtobufConverter extends Converter<List<Byte>, DynamicProtob
       Object value = mapperValue(field.type(), field.value());
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
       if (field.type() == Type.VARINT) {
+        try {
         value = Long.parseLong((String) value);
+        } catch(NumberFormatException e) {
+          value = 0L;
+          log.error(e);
+        }
       }
       msgBuilder.setField(fieldDesc, value);
     }
@@ -135,61 +138,6 @@ public class BinaryProtobufConverter extends Converter<List<Byte>, DynamicProtob
       default:
         return value;
     }
-  }
-
-  private static DynamicProtobuf wrapBytesToProtobuf(List<Byte> bufferList) {
-    try {
-      return bytesToProtobuf(bufferList);
-    } catch (InsufficientResourcesException | UnknownTypeException e) {
-      log.error(e);
-      return new DynamicProtobuf(List.of(new Field(0, Type.LEN, INVALID)), new byte[0]);
-    }
-  }
-
-  private static DynamicProtobuf bytesToProtobuf(List<Byte> bufferList)
-      throws InsufficientResourcesException, UnknownTypeException {
-    byte[] buffer = toArray(bufferList);
-    BufferReader reader = new BufferReader(buffer);
-    List<Field> parts = new ArrayList<>();
-
-    reader.trySkipGrpcHeader();
-    processBuffer(reader, parts);
-
-    byte[] leftover = reader.readBuffer(reader.leftBytes());
-    return new DynamicProtobuf(parts, leftover);
-  }
-
-  private static byte[] toArray(List<Byte> bufferList) {
-    byte[] buffer = new byte[bufferList.size()];
-    for (int i = 0; i < bufferList.size(); i++) {
-      buffer[i] = bufferList.get(i);
-    }
-    return buffer;
-  }
-
-  private static void processBuffer(BufferReader reader, List<Field> parts)
-      throws UnknownTypeException, InsufficientResourcesException {
-    while (reader.leftBytes() > 0) {
-      reader.checkpoint();
-      int indexType = reader.readVarInt().intValue();
-      int type = indexType & 0b111;
-      int index = indexType >> 3;
-
-      String value = readValueBasedOnType(reader, type);
-      parts.add(new Field(index, Type.fromValue(type), value));
-    }
-  }
-
-  private static String readValueBasedOnType(BufferReader reader, int type)
-      throws UnknownTypeException, InsufficientResourcesException {
-    Type fieldType = Type.fromValue(type);
-    return switch (fieldType) {
-      case VARINT -> reader.readVarInt().toString();
-      case LEN -> new String(reader.readBuffer(reader.readVarInt().intValue()));
-      case I32 -> new String(reader.readBuffer(4));
-      case I64 -> new String(reader.readBuffer(8));
-      default -> throw new UnknownTypeException("Unknown type: " + fieldType.getName());
-    };
   }
 
   public static List<Byte> protobufToBytes(DynamicProtobuf res) {

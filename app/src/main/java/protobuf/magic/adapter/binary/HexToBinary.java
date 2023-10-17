@@ -1,22 +1,22 @@
-package protobuf.magic.handler;
+package protobuf.magic.adapter.binary;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import protobuf.magic.exception.*;
 
-public class HexHandler extends ByteHandler {
+public class HexToBinary implements StringToBinary {
   private static final Pattern HEX_PATTERN = Pattern.compile("^[0-9a-fA-F]+$");
 
   @Override
-  public List<Byte> handle(String str) {
+  public List<Byte> convert(String str) throws UnknownStructException {
     String normalizedHexInput = sanitizeHexInput(str);
 
     if (isValidHex(normalizedHexInput)) {
       byte[] bytes = hexStringToByteArray(normalizedHexInput);
       return List.copyOf(bytesToList(bytes));
     }
-
-    return next.handle(str);
+    throw new UnknownStructException("Not a hex string");
   }
 
   private static String sanitizeHexInput(String input) {
