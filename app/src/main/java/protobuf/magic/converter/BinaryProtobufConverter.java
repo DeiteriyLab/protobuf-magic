@@ -17,13 +17,11 @@ import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
 
 @CustomLog
-public class BinaryProtobufConverter
-    extends Converter<List<Byte>, DynamicProtobuf> {
+public class BinaryProtobufConverter extends Converter<List<Byte>, DynamicProtobuf> {
   private static String INVALID = "INVALID";
 
   public BinaryProtobufConverter() {
-    super(BinaryProtobufConverter::wrapBytesToProtobuf,
-          BinaryProtobufConverter::protobufToBytes);
+    super(BinaryProtobufConverter::wrapBytesToProtobuf, BinaryProtobufConverter::protobufToBytes);
   }
 
   private static List<DynamicProtobuf> splitProtobuf(DynamicProtobuf proto) {
@@ -33,14 +31,12 @@ public class BinaryProtobufConverter
 
     var leftOver = proto.leftOver();
     List<DynamicProtobuf> res = new ArrayList<>();
-    DynamicProtobuf currentProto =
-        new DynamicProtobuf(new ArrayList<>(), new byte[0]);
+    DynamicProtobuf currentProto = new DynamicProtobuf(new ArrayList<>(), new byte[0]);
     List<Integer> seenIndexes = new ArrayList<>();
 
     for (var field : proto.fields()) {
       if (!seenIndexes.contains(field.index())) {
-        currentProto.fields().add(
-            new Field(field.index(), field.type(), field.value()));
+        currentProto.fields().add(new Field(field.index(), field.type(), field.value()));
         seenIndexes.add(field.index());
       } else {
         if (!currentProto.fields().isEmpty()) {
@@ -54,8 +50,7 @@ public class BinaryProtobufConverter
     }
 
     if (!currentProto.fields().isEmpty()) {
-      DynamicProtobuf lastProto =
-          new DynamicProtobuf(currentProto.fields(), leftOver);
+      DynamicProtobuf lastProto = new DynamicProtobuf(currentProto.fields(), leftOver);
       res.add(lastProto);
     }
     return res;
@@ -69,15 +64,14 @@ public class BinaryProtobufConverter
       log.error(e);
       return new byte[0];
     }
-    DynamicMessage.Builder msgBuilder =
-        schema.newMessageBuilder("DynamicSchema");
+    DynamicMessage.Builder msgBuilder = schema.newMessageBuilder("DynamicSchema");
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
     for (Field field : res.fields()) {
       String fieldName = generateKey(field.index());
       Object value = mapperValue(field.type(), field.value());
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
       if (field.type() == Type.VARINT) {
-        value = Long.parseLong((String)value);
+        value = Long.parseLong((String) value);
       }
       msgBuilder.setField(fieldDesc, value);
     }
@@ -90,14 +84,12 @@ public class BinaryProtobufConverter
     DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder();
     schemaBuilder.setName("DynamicSchema");
 
-    MessageDefinition.Builder msgDefBuilder =
-        MessageDefinition.newBuilder("DynamicSchema");
+    MessageDefinition.Builder msgDefBuilder = MessageDefinition.newBuilder("DynamicSchema");
 
     for (Field field : res.fields()) {
       String fieldName = generateKey(field.index());
       Type fieldType = field.type();
-      msgDefBuilder.addField("optional", getProtobufFieldType(fieldType),
-                             fieldName, field.index());
+      msgDefBuilder.addField("optional", getProtobufFieldType(fieldType), fieldName, field.index());
     }
 
     MessageDefinition msgDef = msgDefBuilder.build();
@@ -107,19 +99,19 @@ public class BinaryProtobufConverter
 
   private static String getProtobufFieldType(Type type) {
     switch (type) {
-    case VARINT:
-      return "sint64";
-    case I64:
-      return "fixed64";
-    case LEN:
-      return "bytes";
-    case SGROUP:
-    case EGROUP:
-      return "group"; // @FIXME
-    case I32:
-      return "sfixed32";
-    default:
-      return "unknown";
+      case VARINT:
+        return "sint64";
+      case I64:
+        return "fixed64";
+      case LEN:
+        return "bytes";
+      case SGROUP:
+      case EGROUP:
+        return "group"; // @FIXME
+      case I32:
+        return "sfixed32";
+      default:
+        return "unknown";
     }
   }
 
@@ -129,19 +121,19 @@ public class BinaryProtobufConverter
 
   private static Object mapperValue(Type type, Object value) {
     switch (type) {
-    case VARINT:
-      return value;
-    case LEN:
-      return ((String)value).getBytes();
-    case I64:
-      return Long.parseLong(new String((byte[])value));
-    case I32:
-      return Integer.parseInt(new String((byte[])value));
-    case SGROUP:
-    case EGROUP:
-      return value;
-    default:
-      return value;
+      case VARINT:
+        return value;
+      case LEN:
+        return ((String) value).getBytes();
+      case I64:
+        return Long.parseLong(new String((byte[]) value));
+      case I32:
+        return Integer.parseInt(new String((byte[]) value));
+      case SGROUP:
+      case EGROUP:
+        return value;
+      default:
+        return value;
     }
   }
 
@@ -150,8 +142,7 @@ public class BinaryProtobufConverter
       return bytesToProtobuf(bufferList);
     } catch (InsufficientResourcesException | UnknownTypeException e) {
       log.error(e);
-      return new DynamicProtobuf(List.of(new Field(0, Type.LEN, INVALID)),
-                                 new byte[0]);
+      return new DynamicProtobuf(List.of(new Field(0, Type.LEN, INVALID)), new byte[0]);
     }
   }
 
@@ -207,14 +198,14 @@ public class BinaryProtobufConverter
     for (var part : parts) {
       resBytes.addAll(toList(encodeToProtobuf(part)));
     }
-        return resBytes;
-      }
-
-      private static List<Byte> toList(byte[] bytes) {
-        List<Byte> byteList = new ArrayList<>();
-        for (byte b : bytes) {
-          byteList.add(b);
-        }
-        return byteList;
-      }
+    return resBytes;
   }
+
+  private static List<Byte> toList(byte[] bytes) {
+    List<Byte> byteList = new ArrayList<>();
+    for (byte b : bytes) {
+      byteList.add(b);
+    }
+    return byteList;
+  }
+}

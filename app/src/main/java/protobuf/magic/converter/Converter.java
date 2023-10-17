@@ -12,9 +12,13 @@ public class Converter<T, U> {
     this.fromEntity = fromEntity;
   }
 
-  public U convertFromDTO(T dto) { return fromDTO.apply(dto); }
+  public U convertFromDTO(T dto) {
+    return fromDTO.apply(dto);
+  }
 
-  public T convertFromEntity(U entity) { return fromEntity.apply(entity); }
+  public T convertFromEntity(U entity) {
+    return fromEntity.apply(entity);
+  }
 
   public final List<U> convertFromDTOList(List<T> dtos) {
     return dtos.stream().map(this::convertFromDTO).toList();

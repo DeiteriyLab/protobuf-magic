@@ -52,15 +52,12 @@ public class JsonConverter extends FormatConverter {
     }
   }
 
-  private static String jsonToString(JsonNode jsonNode)
-      throws JsonProcessingException {
-    return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(
-        jsonNode);
+  private static String jsonToString(JsonNode jsonNode) throws JsonProcessingException {
+    return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
   }
 
-  private static DynamicProtobuf jsonToProtobuf(JsonNode jsonNode)
-      throws UnknownTypeException {
-      log.debug(String.format("jsonToProtobuf get jsonNode %s", jsonNode));
+  private static DynamicProtobuf jsonToProtobuf(JsonNode jsonNode) throws UnknownTypeException {
+    log.debug(String.format("jsonToProtobuf get jsonNode %s", jsonNode));
     List<Field> fields = new ArrayList<>();
     for (int i = 0; i < jsonNode.size(); ++i) {
       JsonNode fieldNode = jsonNode.get(i);
@@ -78,22 +75,19 @@ public class JsonConverter extends FormatConverter {
   private static String decodeValueFromJson(JsonNode fieldNode, Type type) {
     JsonNode valNode = fieldNode.get("value");
     try {
-      return (type == Type.LEN) ? new String(decodeLenDelim(valNode))
-                                : valNode.asText();
+      return (type == Type.LEN) ? new String(decodeLenDelim(valNode)) : valNode.asText();
     } catch (UnknownTypeException e) {
       log.error(e);
       return valNode.asText();
     }
   }
 
-  private static byte[] decodeLenDelim(JsonNode valNode)
-      throws UnknownTypeException {
+  private static byte[] decodeLenDelim(JsonNode valNode) throws UnknownTypeException {
     if (valNode.isTextual()) {
       return valNode.asText().getBytes();
     } else if (valNode.isArray() || valNode.isObject()) {
       DynamicProtobuf attachment = jsonToProtobuf(valNode);
-      List<Byte> arr =
-          Config.convertBinaryProtobuf().convertFromEntity(attachment);
+      List<Byte> arr = Config.convertBinaryProtobuf().convertFromEntity(attachment);
       byte[] arrr = new byte[arr.size()];
       for (int i = 0; i < arr.size(); i++) {
         arrr[i] = arr.get(i);
@@ -115,7 +109,8 @@ public class JsonConverter extends FormatConverter {
   private static JsonNode encodeFieldToJson(Field field) {
     String type = field.type().name();
     Object value = fieldValue(field);
-    return OBJECT_MAPPER.createObjectNode()
+    return OBJECT_MAPPER
+        .createObjectNode()
         .put("index", field.index())
         .put("type", type)
         .putPOJO("value", value);
@@ -126,7 +121,7 @@ public class JsonConverter extends FormatConverter {
     if (field.type() == Type.LEN) {
       return handleLenType(field, value);
     } else if (field.type() == Type.VARINT) {
-      return new BigInteger((String)value);
+      return new BigInteger((String) value);
     } else {
       return value;
     }
@@ -134,13 +129,12 @@ public class JsonConverter extends FormatConverter {
 
   private static Object handleLenType(Field field, Object value) {
     log.debug(String.format("handleLenType %s %s", field, value));
-    String str = (String)value;
+    String str = (String) value;
     List<Byte> bstr = new ArrayList<>();
     for (int i = 0; i < str.length(); i++) {
-      bstr.add((byte)str.charAt(i));
+      bstr.add((byte) str.charAt(i));
     }
-    DynamicProtobuf attachment =
-        Config.convertBinaryProtobuf().convertFromDTO(bstr);
+    DynamicProtobuf attachment = Config.convertBinaryProtobuf().convertFromDTO(bstr);
     if (bstr.size() > 0 && attachment.leftOver().length == 0) {
       return attachment.fields();
     }
