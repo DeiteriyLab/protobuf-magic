@@ -1,23 +1,19 @@
 package protobuf.magic.protobuf;
 
-import java.math.BigInteger;
 import protobuf.magic.struct.VarintResult;
 
 public class VarintUtils {
-  private static final BigInteger BIGINT_1 = BigInteger.ONE;
-  private static final BigInteger BIGINT_2 = BigInteger.valueOf(2);
-
-  public static BigInteger interpretAsSignedType(BigInteger n) {
-    boolean isEven = n.and(BigInteger.ONE).equals(BigInteger.ZERO);
+  public static long interpretAsSignedType(long n) {
+    boolean isEven = (n & 1) == 0;
     if (isEven) {
-      return n.divide(BIGINT_2);
+      return n / 2;
     } else {
-      return n.add(BIGINT_1).divide(BIGINT_2).multiply(BigInteger.valueOf(-1));
+      return (n + 1) / 2 * -1;
     }
   }
 
   public static VarintResult decodeVarint(byte[] buffer, int offset) {
-    BigInteger res = BigInteger.ZERO;
+    long res = 0;
     int shift = 0;
     int byteValue;
 
@@ -28,10 +24,10 @@ public class VarintUtils {
 
       byteValue = buffer[offset++] & 0xFF;
 
-      BigInteger multiplier = BIGINT_2.pow(shift);
-      BigInteger thisByteValue = BigInteger.valueOf(byteValue & 0x7F).multiply(multiplier);
+      long multiplier = 1L << shift;
+      long thisByteValue = (byteValue & 0x7F) * multiplier;
       shift += 7;
-      res = res.add(thisByteValue);
+      res += thisByteValue;
     } while (byteValue >= 0x80);
 
     return new VarintResult(res, shift / 7);

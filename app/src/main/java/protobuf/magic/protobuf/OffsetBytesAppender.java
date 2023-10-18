@@ -6,7 +6,7 @@ import java.util.List;
 
 public class OffsetBytesAppender {
   public static List<Byte> append(int offset, List<Byte> payload) {
-    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size());
+    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size() + 1);
     for (int i = 0; i < offset - 1; ++i) {
       buffer.put((byte) 0);
     }
