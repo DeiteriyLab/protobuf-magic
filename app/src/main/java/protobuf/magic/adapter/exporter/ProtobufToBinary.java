@@ -95,13 +95,17 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
     return "i" + Integer.toHexString(base);
   }
 
-  public static List<Byte> protobufToBytes(DynamicProtobuf res) {
-    var parts = splitProtobuf(res);
-    List<Byte> resBytes = new ArrayList<>();
+  public static List<Byte> protobufToBytes(DynamicProtobuf proto) {
+    var parts = splitProtobuf(proto);
+    List<Byte> bytes = new ArrayList<>();
     for (var part : parts) {
-      resBytes.addAll(toList(encodeToProtobuf(part)));
+      bytes.addAll(toList(encodeToProtobuf(part)));
     }
-    return OffsetBytesAppender.append(res.fields().get(0).byterange().start(), resBytes);
+    if (proto.fields().size() > 0) {
+      return OffsetBytesAppender.append(proto.fields().get(0).byterange().start(), bytes);
+    } else {
+      return bytes;
+    }
   }
 
   private static List<Byte> toList(byte[] bytes) {
