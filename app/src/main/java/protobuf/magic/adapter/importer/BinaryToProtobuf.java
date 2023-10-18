@@ -7,10 +7,8 @@ import protobuf.magic.adapter.*;
 import protobuf.magic.exception.UnknownStructException;
 import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.protobuf.BufferReader;
-import protobuf.magic.struct.ByteRange;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
-import protobuf.magic.struct.Node;
 import protobuf.magic.struct.Type;
 
 public class BinaryToProtobuf implements Converter<DynamicProtobuf, List<Byte>> {
@@ -27,9 +25,10 @@ public class BinaryToProtobuf implements Converter<DynamicProtobuf, List<Byte>> 
       throws InsufficientResourcesException, UnknownTypeException {
     byte[] buffer = toArray(bufferList);
     BufferReader reader = new BufferReader(buffer);
+    List<Field> parts = new ArrayList<>();
 
     reader.trySkipGrpcHeader();
-    List<Field> parts = processBuffer(reader);
+    processBuffer(reader, parts);
 
     byte[] leftover = reader.readBuffer(reader.leftBytes());
     return new DynamicProtobuf(parts, leftover);
@@ -43,36 +42,27 @@ public class BinaryToProtobuf implements Converter<DynamicProtobuf, List<Byte>> 
     return buffer;
   }
 
-  private static List<Field> processBuffer(BufferReader reader)
+  private static void processBuffer(BufferReader reader, List<Field> parts)
       throws UnknownTypeException, InsufficientResourcesException {
-    List<Field> parts = new ArrayList<>();
-    try {
-      while (reader.leftBytes() > 0) {
-        reader.checkpoint();
-        int start = reader.getOffset();
-        int indexType = reader.readVarInt().intValue();
-        int type = indexType & 0b111;
-        int index = indexType >> 3;
+    while (reader.leftBytes() > 0) {
+      reader.checkpoint();
+      int indexType = reader.readVarInt().intValue();
+      int type = indexType & 0b111;
+      int index = indexType >> 3;
 
-        byte[] value = readValueBasedOnType(reader, type);
-        int end = reader.getOffset();
-        parts.add(
-            new Field(index, Type.fromValue(type), new Node(value), new ByteRange(start, end)));
-      }
-    } catch (Exception e) {
-      reader.resetToCheckpoint();
+      String value = readValueBasedOnType(reader, type);
+      parts.add(new Field(index, Type.fromValue(type), value));
     }
-    return parts;
   }
 
-  private static byte[] readValueBasedOnType(BufferReader reader, int type)
+  private static String readValueBasedOnType(BufferReader reader, int type)
       throws UnknownTypeException, InsufficientResourcesException {
     Type fieldType = Type.fromValue(type);
     return switch (fieldType) {
-      case VARINT -> reader.readVarInt().toByteArray();
-      case LEN -> reader.readBuffer(reader.readVarInt().intValue());
-      case I32 -> reader.readBuffer(4);
-      case I64 -> reader.readBuffer(8);
+      case VARINT -> reader.readVarInt().toString();
+      case LEN -> new String(reader.readBuffer(reader.readVarInt().intValue()));
+      case I32 -> new String(reader.readBuffer(4));
+      case I64 -> new String(reader.readBuffer(8));
       default -> throw new UnknownTypeException("Unknown type: " + fieldType.getName());
     };
   }

@@ -29,10 +29,11 @@ class ProtobufHttpHandler implements HttpHandler {
       return continueWith(requestToBeSent);
     }
     String body = requestToBeSent.bodyToString();
-    String output = body;
+    String output = "Unknown Exception";
     try {
       output = converter.convert(body);
     } catch (UnknownStructException e) {
+      output = e.getMessage();
       log.error(e);
     }
 

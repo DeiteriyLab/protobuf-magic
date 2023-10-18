@@ -11,9 +11,9 @@ import java.util.List;
 import lombok.CustomLog;
 import protobuf.magic.adapter.Converter;
 import protobuf.magic.exception.UnknownStructException;
-import protobuf.magic.protobuf.OffsetBytesAppender;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
+import protobuf.magic.struct.Type;
 
 @CustomLog
 public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> {
@@ -34,7 +34,7 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
 
     for (var field : proto.fields()) {
       if (!seenIndexes.contains(field.index())) {
-        currentProto.fields().add(field);
+        currentProto.fields().add(new Field(field.index(), field.type(), field.value()));
         seenIndexes.add(field.index());
       } else {
         if (!currentProto.fields().isEmpty()) {
@@ -66,8 +66,16 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
     Descriptor msgDesc = msgBuilder.getDescriptorForType();
     for (Field field : res.fields()) {
       String fieldName = generateKey(field.index());
-      Object value = field.parseValue();
+      Object value = mapperValue(field.type(), field.value());
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
+      if (field.type() == Type.VARINT) {
+        try {
+          value = Long.parseLong((String) value);
+        } catch (NumberFormatException e) {
+          value = 0L;
+          log.error(e);
+        }
+      }
       msgBuilder.setField(fieldDesc, value);
     }
     DynamicMessage msg = msgBuilder.buildPartial();
@@ -83,7 +91,8 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
 
     for (Field field : res.fields()) {
       String fieldName = generateKey(field.index());
-      msgDefBuilder.addField("optional", field.type().getName(), fieldName, field.index());
+      Type fieldType = field.type();
+      msgDefBuilder.addField("optional", getProtobufFieldType(fieldType), fieldName, field.index());
     }
 
     MessageDefinition msgDef = msgDefBuilder.build();
@@ -91,8 +100,44 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
     return schemaBuilder.build();
   }
 
+  private static String getProtobufFieldType(Type type) {
+    switch (type) {
+      case VARINT:
+        return "sint64";
+      case I64:
+        return "fixed64";
+      case LEN:
+        return "bytes";
+      case SGROUP:
+      case EGROUP:
+        return "group"; // @FIXME
+      case I32:
+        return "sfixed32";
+      default:
+        return "unknown";
+    }
+  }
+
   private static String generateKey(int base) {
     return "i" + Integer.toHexString(base);
+  }
+
+  private static Object mapperValue(Type type, Object value) {
+    switch (type) {
+      case VARINT:
+        return value;
+      case LEN:
+        return ((String) value).getBytes();
+      case I64:
+        return Long.parseLong(new String((byte[]) value));
+      case I32:
+        return Integer.parseInt(new String((byte[]) value));
+      case SGROUP:
+      case EGROUP:
+        return value;
+      default:
+        return value;
+    }
   }
 
   public static List<Byte> protobufToBytes(DynamicProtobuf res) {
@@ -101,7 +146,7 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
     for (var part : parts) {
       resBytes.addAll(toList(encodeToProtobuf(part)));
     }
-    return OffsetBytesAppender.append(res.fields().get(0).byterange().start(), resBytes);
+    return resBytes;
   }
 
   private static List<Byte> toList(byte[] bytes) {

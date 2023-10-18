@@ -14,12 +14,12 @@ import protobuf.magic.exception.UnknownTypeException;
  * helps to maintain the codebase and increases readability.
  */
 public enum Type {
-  VARINT(0, "sint64"), // int32, int64, uint32, uint64, sint32, sint64, bool, enum
-  I64(1, "fixed64"), // fixed64, sfixed64, double
-  LEN(2, "string"), // string, bytes, embedded messages, packed repeated fields
-  // SGROUP(3, "sgroup"), // group start (deprecated)
-  // EGROUP(4, "egroup"), // group end (deprecated)
-  I32(5, "sfixed32"); // fixed32, sfixed32, float
+  VARINT(0, "VARINT"), // int32, int64, uint32, uint64, sint32, sint64, bool, enum
+  I64(1, "I64"), // fixed64, sfixed64, double
+  LEN(2, "LEN"), // string, bytes, embedded messages, packed repeated fields
+  SGROUP(3, "SGROUP"), // group start (deprecated)
+  EGROUP(4, "EGROUP"), // group end (deprecated)
+  I32(5, "I32"); // fixed32, sfixed32, float
 
   private final int value;
   private final String name;

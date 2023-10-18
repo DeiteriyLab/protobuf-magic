@@ -28,10 +28,11 @@ public class ProtobufPayloadProcessor implements PayloadProcessor {
   @Override
   public PayloadProcessingResult processPayload(PayloadData payloadData) {
     String input = payloadData.currentPayload().toString();
-    String output = input;
+    String output = "Unknown Exception";
     try {
       output = converter.convert(input);
     } catch (UnknownStructException e) {
+      output = e.getMessage();
       log.error(e);
     }
     return usePayload(ByteArray.byteArray(output));

@@ -3,15 +3,14 @@ package protobuf.magic.adapter.exporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.CustomLog;
 import protobuf.magic.adapter.importer.BinaryToProtobuf;
 import protobuf.magic.exception.*;
-import protobuf.magic.struct.ByteRange;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
-import protobuf.magic.struct.Node;
 import protobuf.magic.struct.Type;
 
 @CustomLog
@@ -68,27 +67,24 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
     return has && type;
   }
 
-  private static Field decodeFieldFromJson(JsonNode node)
+  private static Field decodeFieldFromJson(JsonNode fieldNode)
       throws UnknownTypeException, UnknownStructException {
-    int index = node.get("index").asInt();
-    String stype = node.get("type").asText();
-    int start = node.get("start").asInt();
-    int end = node.get("end").asInt();
+    int index = fieldNode.get("index").asInt();
+    String stype = fieldNode.get("type").asText();
     Type type = Type.fromName(stype);
-    byte[] value = decodeValueFromJson(node, type);
-    return new Field(index, type, new Node(value), new ByteRange(start, end));
+    String value = decodeValueFromJson(fieldNode, type);
+    return new Field(index, type, value);
   }
 
-  private static byte[] decodeValueFromJson(JsonNode fieldNode, Type type)
+  private static String decodeValueFromJson(JsonNode fieldNode, Type type)
       throws UnknownStructException {
     JsonNode valNode = fieldNode.get("value");
-    byte[] bytes = valNode.asText("").getBytes();
     try {
-      return (type == Type.LEN) ? decodeLenDelim(valNode) : bytes;
+      return (type == Type.LEN) ? new String(decodeLenDelim(valNode)) : valNode.asText();
     } catch (UnknownTypeException e) {
       log.error(e);
+      return valNode.asText();
     }
-    return bytes;
   }
 
   private static byte[] decodeLenDelim(JsonNode valNode)
@@ -97,59 +93,61 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
       return valNode.asText().getBytes();
     } else if (valNode.isArray() || valNode.isObject()) {
       DynamicProtobuf attachment = jsonToProtobuf(valNode);
-      List<Byte> list = PROTOBUF_TO_BINARY.convert(attachment);
-      byte[] array = new byte[list.size()];
-      for (int i = 0; i < list.size(); i++) {
-        array[i] = list.get(i);
+      List<Byte> arr = PROTOBUF_TO_BINARY.convert(attachment);
+      byte[] arrr = new byte[arr.size()];
+      for (int i = 0; i < arr.size(); i++) {
+        arrr[i] = arr.get(i);
       }
-      return array;
+      return arrr;
     }
     log.error(String.format("Decoding error: %s", valNode));
     return INVALID.getBytes();
   }
 
   private static JsonNode protobufToJson(DynamicProtobuf protobuf) {
-    List<JsonNode> nodes = new ArrayList<>();
+    List<JsonNode> fieldNodes = new ArrayList<>();
     for (Field field : protobuf.fields()) {
-      nodes.add(encodeFieldToJson(field));
+      fieldNodes.add(encodeFieldToJson(field));
     }
-    return OBJECT_MAPPER.valueToTree(nodes);
+    return OBJECT_MAPPER.valueToTree(fieldNodes);
   }
 
   private static JsonNode encodeFieldToJson(Field field) {
-    Object value = field.parseValue();
-    if (field.type() == Type.LEN) {
-      value = handleLenType(field.value());
-    }
+    String type = field.type().name();
+    Object value = fieldValue(field);
     return OBJECT_MAPPER
         .createObjectNode()
         .put("index", field.index())
-        .put("type", field.type().getName())
-        .put("start", field.byterange().start())
-        .put("end", field.byterange().end())
+        .put("type", type)
         .putPOJO("value", value);
   }
 
-  private static Object handleLenType(Node value) {
-    try {
-      DynamicProtobuf proto = value.asProtobuf();
-      if (proto.leftOver().length == 0) {
-        var fields = proto.fields();
-        List<JsonNode> fieldNodes = new ArrayList<>();
-        for (var field : fields) {
-          fieldNodes.add(
-              OBJECT_MAPPER
-                  .createObjectNode()
-                  .put("index", field.index())
-                  .put("type", field.type().getName())
-                  .putPOJO("value", field.parseValue()));
-        }
+  private static Object fieldValue(Field field) {
+    Object value = field.value();
+    if (field.type() == Type.LEN) {
+      return handleLenType(field, value);
+    } else if (field.type() == Type.VARINT) {
+      return new BigInteger((String) value);
+    } else {
+      return value;
+    }
+  }
 
-        return fieldNodes;
+  private static Object handleLenType(Field field, Object value) {
+    log.debug(String.format("handleLenType %s %s", field, value));
+    String str = (String) value;
+    List<Byte> bstr = new ArrayList<>();
+    for (int i = 0; i < str.length(); i++) {
+      bstr.add((byte) str.charAt(i));
+    }
+    try {
+      DynamicProtobuf attachment = BINARY_TO_PROTOBUF.convert(bstr);
+      if (bstr.size() > 0 && attachment.leftOver().length == 0) {
+        return attachment.fields();
       }
-    } catch (Exception e) {
+    } catch (UnknownStructException e) {
       log.error(e);
     }
-    return value.asString();
+    return value;
   }
 }

@@ -39,10 +39,11 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      String output = content;
+      String output;
       try {
         output = converter.convert(content);
       } catch (UnknownStructException e) {
+        output = e.getMessage();
         log.error(e);
       }
 
@@ -80,10 +81,6 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
             .findFirst();
 
     dataParam.ifPresent(httpParameter -> parsedHttpParameter = httpParameter);
-
-    if (requestResponse.request().headers().size() == 0) {
-      return false;
-    }
 
     String contentType =
         requestResponse.request().headers().stream()

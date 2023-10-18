@@ -38,10 +38,11 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      String output = content;
+      String output;
       try {
         output = converter.convert(content);
       } catch (UnknownStructException e) {
+        output = e.getMessage();
         log.error(e);
       }
 
