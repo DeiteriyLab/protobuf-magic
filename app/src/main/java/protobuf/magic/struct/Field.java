@@ -1,3 +1,3 @@
 package protobuf.magic.struct;
 
-public record Field(int index, Type type, Object value) {}
+public record Field(int index, Type type, Object value, ByteRange byterange) {}
