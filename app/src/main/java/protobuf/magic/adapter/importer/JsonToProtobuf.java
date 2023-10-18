@@ -9,8 +9,10 @@ import lombok.CustomLog;
 import protobuf.magic.adapter.exporter.ProtobufToBinary;
 import protobuf.magic.exception.UnknownStructException;
 import protobuf.magic.exception.UnknownTypeException;
+import protobuf.magic.struct.ByteRange;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
+import protobuf.magic.struct.Node;
 import protobuf.magic.struct.Type;
 
 @CustomLog
@@ -21,10 +23,6 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
 
   @Override
   public DynamicProtobuf convert(String str) throws UnknownStructException {
-    return stringToProtobuf(str);
-  }
-
-  private static DynamicProtobuf stringToProtobuf(String str) throws UnknownStructException {
     JsonNode jsonNode = stringToJson(str);
     try {
       return jsonToProtobuf(jsonNode);
@@ -64,38 +62,53 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
 
   private static boolean checkValidField(JsonNode fieldNode) {
     if (fieldNode == null) return false;
-    boolean has = fieldNode.has("index") && fieldNode.has("type") && fieldNode.has("value");
+    boolean has =
+        fieldNode.has("index")
+            && fieldNode.has("type")
+            && fieldNode.has("value")
+            && fieldNode.has("start")
+            && fieldNode.has("end");
     if (!has) return has;
-    boolean indexIsValid = true;
+    boolean indexIsValid = false;
+    boolean startIsValid = false;
+    boolean endIsValid = false;
     try {
       int index = Integer.parseInt(fieldNode.get("index").asText());
       indexIsValid = index >= 0;
+      int start = Integer.parseInt(fieldNode.get("start").asText());
+      startIsValid = start >= 0;
+      int end = Integer.parseInt(fieldNode.get("end").asText());
+      endIsValid = end >= 0;
     } catch (NumberFormatException e) {
       indexIsValid = false;
       log.error(e);
     }
-    boolean type = indexIsValid;
+    boolean type = indexIsValid && startIsValid && endIsValid;
     return has && type;
   }
 
-  private static Field decodeFieldFromJson(JsonNode fieldNode)
+  private static Field decodeFieldFromJson(JsonNode node)
       throws UnknownTypeException, UnknownStructException {
-    int index = fieldNode.get("index").asInt();
-    String stype = fieldNode.get("type").asText();
+    int index = node.get("index").asInt();
+    String stype = node.get("type").asText();
+    int start = node.get("start").asInt(0);
+    int end = node.get("end").asInt(0);
     Type type = Type.fromName(stype);
-    String value = decodeValueFromJson(fieldNode, type);
-    return new Field(index, type, value);
+    byte[] value = decodeValueFromJson(node, type);
+    return new Field(index, type, new Node(value), new ByteRange(start, end));
   }
 
-  private static String decodeValueFromJson(JsonNode fieldNode, Type type)
+  // @FIXME dublicate method JsonToProtobuf and ProtobufToJson
+  private static byte[] decodeValueFromJson(JsonNode fieldNode, Type type)
       throws UnknownStructException {
     JsonNode valNode = fieldNode.get("value");
+    byte[] bytes = valNode.asText("").getBytes();
     try {
-      return (type == Type.LEN) ? new String(decodeLenDelim(valNode)) : valNode.asText();
+      return (type == Type.LEN) ? decodeLenDelim(valNode) : bytes;
     } catch (UnknownTypeException e) {
       log.error(e);
-      return valNode.asText();
     }
+    return bytes;
   }
 
   private static byte[] decodeLenDelim(JsonNode valNode)
@@ -104,12 +117,12 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
       return valNode.asText().getBytes();
     } else if (valNode.isArray() || valNode.isObject()) {
       DynamicProtobuf attachment = jsonToProtobuf(valNode);
-      List<Byte> arr = PROTOBUF_TO_BINARY.convert(attachment);
-      byte[] arrr = new byte[arr.size()];
-      for (int i = 0; i < arr.size(); i++) {
-        arrr[i] = arr.get(i);
+      List<Byte> list = PROTOBUF_TO_BINARY.convert(attachment);
+      byte[] array = new byte[list.size()];
+      for (int i = 0; i < list.size(); i++) {
+        array[i] = list.get(i);
       }
-      return arrr;
+      return array;
     }
     log.error(String.format("Decoding error: %s", valNode));
     return INVALID.getBytes();
