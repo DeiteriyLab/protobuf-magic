@@ -3,8 +3,10 @@ package protobuf.magic.adapter.binary;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import lombok.CustomLog;
 import protobuf.magic.exception.*;
 
+@CustomLog
 public class HexToBinary implements StringToBinary {
   private static final Pattern HEX_PATTERN = Pattern.compile("^[0-9a-fA-F]+$");
 
@@ -32,10 +34,14 @@ public class HexToBinary implements StringToBinary {
     byte[] data = new byte[len / 2];
 
     for (int i = 0; i < len; i += 2) {
-      data[i / 2] =
-          (byte)
-              ((Character.digit(hexString.charAt(i), 16) << 4)
-                  + Character.digit(hexString.charAt(i + 1), 16));
+      try {
+        data[i / 2] =
+            (byte)
+                ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
+      } catch (StringIndexOutOfBoundsException e) {
+        log.error(e);
+      }
     }
 
     return data;
