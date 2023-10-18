@@ -70,8 +70,8 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
       FieldDescriptor fieldDesc = msgDesc.findFieldByName(fieldName);
       if (field.type() == Type.VARINT) {
         try {
-          value = Long.parseLong((String) value);
-        } catch (NumberFormatException e) {
+        value = Long.parseLong((String) value);
+        } catch(NumberFormatException e) {
           value = 0L;
           log.error(e);
         }

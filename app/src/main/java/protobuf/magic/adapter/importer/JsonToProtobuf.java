@@ -17,14 +17,16 @@ import protobuf.magic.struct.Type;
 public class JsonToProtobuf implements HumanReadableToProtobuf {
   private static final String INVALID = "INVALID";
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final ProtobufToBinary PROTOBUF_TO_BINARY = new ProtobufToBinary();
+  private static final ProtobufToBinary PROTOBUF_TO_BINARY =
+      new ProtobufToBinary();
 
   @Override
   public DynamicProtobuf convert(String str) throws UnknownStructException {
     return stringToProtobuf(str);
   }
 
-  private static DynamicProtobuf stringToProtobuf(String str) throws UnknownStructException {
+  private static DynamicProtobuf stringToProtobuf(String str)
+      throws UnknownStructException {
     JsonNode jsonNode = stringToJson(str);
     try {
       return jsonToProtobuf(jsonNode);
@@ -63,9 +65,12 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
   }
 
   private static boolean checkValidField(JsonNode fieldNode) {
-    if (fieldNode == null) return false;
-    boolean has = fieldNode.has("index") && fieldNode.has("type") && fieldNode.has("value");
-    if (!has) return has;
+    if (fieldNode == null)
+      return false;
+    boolean has = fieldNode.has("index") && fieldNode.has("type") &&
+                  fieldNode.has("value");
+    if (!has)
+      return has;
     boolean indexIsValid = true;
     try {
       int index = Integer.parseInt(fieldNode.get("index").asText());
@@ -91,7 +96,8 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
       throws UnknownStructException {
     JsonNode valNode = fieldNode.get("value");
     try {
-      return (type == Type.LEN) ? new String(decodeLenDelim(valNode)) : valNode.asText();
+      return (type == Type.LEN) ? new String(decodeLenDelim(valNode))
+                                : valNode.asText();
     } catch (UnknownTypeException e) {
       log.error(e);
       return valNode.asText();
