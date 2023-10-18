@@ -3,6 +3,7 @@ package protobuf.magic.adapter.importer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.CustomLog;
@@ -99,12 +100,19 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
   }
 
   // @FIXME dublicate method JsonToProtobuf and ProtobufToJson
-  private static byte[] decodeValueFromJson(JsonNode fieldNode, Type type)
+  private static byte[] decodeValueFromJson(JsonNode node, Type type)
       throws UnknownStructException {
-    JsonNode valNode = fieldNode.get("value");
-    byte[] bytes = valNode.asText("").getBytes();
+    JsonNode value = node.get("value");
+    byte[] bytes = value.asText("").getBytes();
     try {
-      return (type == Type.LEN) ? decodeLenDelim(valNode) : bytes;
+      if (type == Type.LEN) {
+        return decodeLenDelim(value);
+      } else if (type == Type.VARINT) {
+        Long lval = value.asLong();
+        return ByteBuffer.wrap(new byte[8]).putLong(lval).array();
+      } else {
+        return bytes;
+      }
     } catch (UnknownTypeException e) {
       log.error(e);
     }

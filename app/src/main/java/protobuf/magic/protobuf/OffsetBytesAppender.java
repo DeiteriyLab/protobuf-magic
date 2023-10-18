@@ -9,7 +9,7 @@ public class OffsetBytesAppender {
     if (offset == 0) {
       return payload;
     }
-    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size() + 1);
+    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size());
     for (int i = 0; i < offset - 1; ++i) {
       buffer.put((byte) 0);
     }
