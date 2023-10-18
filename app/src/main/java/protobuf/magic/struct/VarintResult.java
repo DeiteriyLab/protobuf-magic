@@ -1,3 +1,5 @@
 package protobuf.magic.struct;
 
-public record VarintResult(Long value, int length) {}
+import java.math.BigInteger;
+
+public record VarintResult(BigInteger value, int length) {}
