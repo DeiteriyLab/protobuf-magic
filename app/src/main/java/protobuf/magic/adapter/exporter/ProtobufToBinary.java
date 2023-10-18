@@ -97,7 +97,6 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
 
   public static List<Byte> protobufToBytes(DynamicProtobuf proto) {
     var parts = splitProtobuf(proto);
-    log.info(String.format("Split into %d parts", parts.size()));
     List<Byte> bytes = new ArrayList<>();
     for (var part : parts) {
       bytes.addAll(toList(encodeToProtobuf(part)));
