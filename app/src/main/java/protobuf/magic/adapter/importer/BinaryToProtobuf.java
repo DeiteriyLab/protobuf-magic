@@ -1,5 +1,6 @@
 package protobuf.magic.adapter.importer;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.InsufficientResourcesException;
@@ -69,7 +70,7 @@ public class BinaryToProtobuf implements Converter<DynamicProtobuf, List<Byte>> 
       throws UnknownTypeException, InsufficientResourcesException {
     Type fieldType = Type.fromValue(type);
     return switch (fieldType) {
-      case VARINT -> reader.readVarInt().toByteArray();
+      case VARINT -> ByteBuffer.wrap(new byte[8]).putLong(reader.readVarInt()).array();
       case LEN -> reader.readBuffer(reader.readVarInt().intValue());
       case I32 -> reader.readBuffer(4);
       case I64 -> reader.readBuffer(8);

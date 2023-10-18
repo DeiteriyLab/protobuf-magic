@@ -1,6 +1,5 @@
 package protobuf.magic.protobuf;
 
-import java.math.BigInteger;
 import javax.naming.InsufficientResourcesException;
 import protobuf.magic.struct.VarintResult;
 
@@ -19,7 +18,7 @@ public class BufferReader {
     this.offset = 0;
   }
 
-  public BigInteger readVarInt() {
+  public Long readVarInt() {
     VarintResult result = VarintUtils.decodeVarint(buffer, offset);
     offset += result.length();
     return result.value();

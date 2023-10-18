@@ -23,9 +23,12 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
 
   @Override
   public DynamicProtobuf convert(String str) throws UnknownStructException {
+    log.info("JsonToProtobuf: " + str);
     JsonNode jsonNode = stringToJson(str);
     try {
-      return jsonToProtobuf(jsonNode);
+      DynamicProtobuf proto = jsonToProtobuf(jsonNode);
+      log.info("JsonToProtobuf result: " + proto);
+      return proto;
     } catch (UnknownTypeException e) {
       log.error(e);
       throw new UnknownStructException("Type not found");
@@ -94,21 +97,29 @@ public class JsonToProtobuf implements HumanReadableToProtobuf {
     int start = node.get("start").asInt(0);
     int end = node.get("end").asInt(0);
     Type type = Type.fromName(stype);
-    byte[] value = decodeValueFromJson(node, type);
-    return new Field(index, type, new Node(value), new ByteRange(start, end));
+    Node value = decodeValueFromJson(node, type);
+    return new Field(index, type, value, new ByteRange(start, end));
   }
 
   // @FIXME dublicate method JsonToProtobuf and ProtobufToJson
-  private static byte[] decodeValueFromJson(JsonNode fieldNode, Type type)
-      throws UnknownStructException {
-    JsonNode valNode = fieldNode.get("value");
-    byte[] bytes = valNode.asText("").getBytes();
+  private static Node decodeValueFromJson(JsonNode field, Type type) throws UnknownStructException {
+    JsonNode node = field.get("value");
+    byte[] bytes = node.asText("").getBytes();
+    Node value = new Node(bytes);
     try {
-      return (type == Type.LEN) ? decodeLenDelim(valNode) : bytes;
+      if (type == Type.LEN) {
+        value.setBytes(decodeLenDelim(node));
+      } else if (type == Type.VARINT) {
+        value.setLong(node.asLong());
+      } else if (type == Type.I32) {
+        value.setFloat((float) node.asDouble());
+      } else if (type == Type.I64) {
+        value.setDouble(node.asDouble());
+      }
     } catch (UnknownTypeException e) {
       log.error(e);
     }
-    return bytes;
+    return value;
   }
 
   private static byte[] decodeLenDelim(JsonNode valNode)
