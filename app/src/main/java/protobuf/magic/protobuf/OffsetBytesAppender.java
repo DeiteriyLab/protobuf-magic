@@ -11,9 +11,9 @@ public class OffsetBytesAppender {
     }
     ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size() + 1);
     for (int i = 0; i < offset - 1; ++i) {
-      buffer.put((byte)0);
+      buffer.put((byte) 0);
     }
-    buffer.put((byte)payload.size());
+    buffer.put((byte) payload.size());
     byte[] bytes = toArray(payload);
     buffer.put(bytes);
     List<Byte> list = toList(buffer.array());
