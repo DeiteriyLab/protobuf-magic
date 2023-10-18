@@ -137,12 +137,7 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
         var fields = proto.fields();
         List<JsonNode> fieldNodes = new ArrayList<>();
         for (var field : fields) {
-          fieldNodes.add(
-              OBJECT_MAPPER
-                  .createObjectNode()
-                  .put("index", field.index())
-                  .put("type", field.type().getName())
-                  .putPOJO("value", field.parseValue()));
+          fieldNodes.add(encodeFieldToJson(field));
         }
 
         return fieldNodes;

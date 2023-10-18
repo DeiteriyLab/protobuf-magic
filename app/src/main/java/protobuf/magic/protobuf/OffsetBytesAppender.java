@@ -6,11 +6,14 @@ import java.util.List;
 
 public class OffsetBytesAppender {
   public static List<Byte> append(int offset, List<Byte> payload) {
-    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size());
-    for (int i = 0; i < offset - 1; ++i) {
-      buffer.put((byte) 0);
+    if (offset == 0) {
+      return payload;
     }
-    buffer.put((byte) payload.size());
+    ByteBuffer buffer = ByteBuffer.allocate(offset + payload.size() + 1);
+    for (int i = 0; i < offset - 1; ++i) {
+      buffer.put((byte)0);
+    }
+    buffer.put((byte)payload.size());
     byte[] bytes = toArray(payload);
     buffer.put(bytes);
     List<Byte> list = toList(buffer.array());
