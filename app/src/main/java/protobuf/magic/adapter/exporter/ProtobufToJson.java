@@ -9,7 +9,6 @@ import java.util.List;
 import lombok.CustomLog;
 import protobuf.magic.adapter.importer.BinaryToProtobuf;
 import protobuf.magic.exception.*;
-import protobuf.magic.struct.ByteRange;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
@@ -53,16 +52,12 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
     return new DynamicProtobuf(fields, new byte[0]);
   }
 
-  private static boolean checkValidField(JsonNode node) {
-    boolean has = node.has("index") && node.has("type") && node.has("value") && node.has("start") && node.has("end");
+  private static boolean checkValidField(JsonNode fieldNode) {
+    boolean has = fieldNode.has("index") && fieldNode.has("type") && fieldNode.has("value");
     if (!has) return has;
     boolean indexIsValid = true;
     try {
-      int index = Integer.parseInt(node.get("index").asText());
-      indexIsValid = index >= 0;
-      index = Integer.parseInt(node.get("start").asText());
-      indexIsValid = index >= 0;
-      index = Integer.parseInt(node.get("end").asText());
+      int index = Integer.parseInt(fieldNode.get("index").asText());
       indexIsValid = index >= 0;
     } catch (NumberFormatException e) {
       indexIsValid = false;
@@ -72,15 +67,13 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
     return has && type;
   }
 
-  private static Field decodeFieldFromJson(JsonNode node)
+  private static Field decodeFieldFromJson(JsonNode fieldNode)
       throws UnknownTypeException, UnknownStructException {
-    int index = node.get("index").asInt();
-    String stype = node.get("type").asText();
-    int start = node.get("start").asInt();
-    int end = node.get("end").asInt();
+    int index = fieldNode.get("index").asInt();
+    String stype = fieldNode.get("type").asText();
     Type type = Type.fromName(stype);
-    String value = decodeValueFromJson(node, type);
-    return new Field(index, type, value, new ByteRange(start, end));
+    String value = decodeValueFromJson(fieldNode, type);
+    return new Field(index, type, value);
   }
 
   private static String decodeValueFromJson(JsonNode fieldNode, Type type)
@@ -126,8 +119,6 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
         .createObjectNode()
         .put("index", field.index())
         .put("type", type)
-        .put("start", field.byterange().start())
-        .put("end", field.byterange().end())
         .putPOJO("value", value);
   }
 
@@ -136,7 +127,7 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
     if (field.type() == Type.LEN) {
       return handleLenType(field, value);
     } else if (field.type() == Type.VARINT) {
-      return Long.valueOf((String) value);
+      return new BigInteger((String) value);
     } else {
       return value;
     }
@@ -152,11 +143,7 @@ public class ProtobufToJson implements ProtobufToHumanReadable {
     try {
       DynamicProtobuf attachment = BINARY_TO_PROTOBUF.convert(bstr);
       if (bstr.size() > 0 && attachment.leftOver().length == 0) {
-        List<JsonNode> nodes = new ArrayList<>();
-        for(Field f: attachment.fields()){
-          nodes.add(encodeFieldToJson(f));
-        }
-        return OBJECT_MAPPER.createArrayNode().addAll(nodes);
+        return attachment.fields();
       }
     } catch (UnknownStructException e) {
       log.error(e);

@@ -11,7 +11,6 @@ import java.util.List;
 import lombok.CustomLog;
 import protobuf.magic.adapter.Converter;
 import protobuf.magic.exception.UnknownStructException;
-import protobuf.magic.protobuf.OffsetBytesAppender;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
@@ -35,7 +34,7 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
 
     for (var field : proto.fields()) {
       if (!seenIndexes.contains(field.index())) {
-        currentProto.fields().add(field);
+        currentProto.fields().add(new Field(field.index(), field.type(), field.value()));
         seenIndexes.add(field.index());
       } else {
         if (!currentProto.fields().isEmpty()) {
@@ -141,17 +140,13 @@ public class ProtobufToBinary implements Converter<List<Byte>, DynamicProtobuf> 
     }
   }
 
-  public static List<Byte> protobufToBytes(DynamicProtobuf proto) {
-    var parts = splitProtobuf(proto);
-    List<Byte> bytes = new ArrayList<>();
+  public static List<Byte> protobufToBytes(DynamicProtobuf res) {
+    var parts = splitProtobuf(res);
+    List<Byte> resBytes = new ArrayList<>();
     for (var part : parts) {
-      bytes.addAll(toList(encodeToProtobuf(part)));
+      resBytes.addAll(toList(encodeToProtobuf(part)));
     }
-    if (proto.fields().size() != 0) {
-      return OffsetBytesAppender.append(proto.fields().get(0).byterange().start(), bytes);
-    } else {
-      return bytes;
-    }
+    return resBytes;
   }
 
   private static List<Byte> toList(byte[] bytes) {

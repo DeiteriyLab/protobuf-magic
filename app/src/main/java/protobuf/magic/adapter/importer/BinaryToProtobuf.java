@@ -7,7 +7,6 @@ import protobuf.magic.adapter.*;
 import protobuf.magic.exception.UnknownStructException;
 import protobuf.magic.exception.UnknownTypeException;
 import protobuf.magic.protobuf.BufferReader;
-import protobuf.magic.struct.ByteRange;
 import protobuf.magic.struct.DynamicProtobuf;
 import protobuf.magic.struct.Field;
 import protobuf.magic.struct.Type;
@@ -47,14 +46,12 @@ public class BinaryToProtobuf implements Converter<DynamicProtobuf, List<Byte>> 
       throws UnknownTypeException, InsufficientResourcesException {
     while (reader.leftBytes() > 0) {
       reader.checkpoint();
-      int start = reader.getOffset();
       int indexType = reader.readVarInt().intValue();
       int type = indexType & 0b111;
       int index = indexType >> 3;
 
       String value = readValueBasedOnType(reader, type);
-      int end = reader.getOffset();
-      parts.add(new Field(index, Type.fromValue(type), value, new ByteRange(start, end)));
+      parts.add(new Field(index, Type.fromValue(type), value));
     }
   }
 
