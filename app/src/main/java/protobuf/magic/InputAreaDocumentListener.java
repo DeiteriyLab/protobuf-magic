@@ -10,7 +10,8 @@ public class InputAreaDocumentListener implements DocumentListener {
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private LockActions lockActions = new LockActions();
-  private static final BinaryToHumanReadable converter = new BinaryToHumanReadable();
+  private static final BinaryToHumanReadable converter =
+      new BinaryToHumanReadable();
 
   public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea) {
     this.inputArea = inputArea;
@@ -19,7 +20,8 @@ public class InputAreaDocumentListener implements DocumentListener {
 
   @Override
   public void insertUpdate(DocumentEvent event) {
-    if (lockActions.isLock()) return;
+    if (lockActions.isLock())
+      return;
     lockActions.setLock(true);
     String output;
     try {
