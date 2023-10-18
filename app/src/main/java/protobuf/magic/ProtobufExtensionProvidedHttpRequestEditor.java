@@ -14,15 +14,13 @@ import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor;
 import java.awt.Component;
 import java.util.Optional;
 import lombok.CustomLog;
-import protobuf.magic.adapter.BinaryToHumanReadable;
 import protobuf.magic.adapter.HumanReadableToBinary;
 import protobuf.magic.exception.UnknownStructException;
 
 @CustomLog
 class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHttpRequestEditor {
   private final RawEditor requestEditor;
-  private static final BinaryToHumanReadable binaryToHuman = new BinaryToHumanReadable();
-  private static final HumanReadableToBinary humanToBinary = new HumanReadableToBinary();
+  private static final HumanReadableToBinary converter = new HumanReadableToBinary();
   private HttpRequestResponse requestResponse;
   private ParsedHttpParameter parsedHttpParameter;
 
@@ -41,10 +39,9 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      log.info("Http request editor has changed: " + content);
       String output = content;
       try {
-        output = humanToBinary.convert(content);
+        output = converter.convert(content);
       } catch (UnknownStructException e) {
         log.error(e);
       }
@@ -63,12 +60,12 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
     ByteArray bodyValue = requestResponse.request().body();
     String body = bodyValue.toString();
-    String output = body;
+    String output;
 
-    log.info("Http request editor has changed: " + body);
     try {
-      output = binaryToHuman.convert(body);
+      output = converter.convert(body);
     } catch (UnknownStructException e) {
+      output = e.getMessage();
       log.error(e);
     }
 
@@ -105,7 +102,7 @@ class ProtobufExtensionProvidedHttpRequestEditor implements ExtensionProvidedHtt
 
   @Override
   public String caption() {
-    return Config.extensionName();
+    return "Protobuf Magic";
   }
 
   @Override

@@ -14,7 +14,6 @@ import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpResponseEditor;
 import java.awt.Component;
 import java.util.List;
 import lombok.CustomLog;
-import protobuf.magic.adapter.BinaryToHumanReadable;
 import protobuf.magic.adapter.HumanReadableToBinary;
 import protobuf.magic.exception.UnknownStructException;
 
@@ -22,8 +21,7 @@ import protobuf.magic.exception.UnknownStructException;
 class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHttpResponseEditor {
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
-  private static final HumanReadableToBinary humanToBinary = new HumanReadableToBinary();
-  private static final BinaryToHumanReadable binaryToHuman = new BinaryToHumanReadable();
+  private static final HumanReadableToBinary converter = new HumanReadableToBinary();
 
   ProtobufExtensionProvidedHttpResponseEditor(
       MontoyaApi api, EditorCreationContext creationContext) {
@@ -42,7 +40,7 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
       String content = requestEditor.getContents().toString();
       String output = content;
       try {
-        output = binaryToHuman.convert(content);
+        output = converter.convert(content);
       } catch (UnknownStructException e) {
         log.error(e);
       }
@@ -59,16 +57,13 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
   public void setRequestResponse(HttpRequestResponse requestResponse) {
     this.requestResponse = requestResponse;
 
-    ByteArray bodyValue =
-        requestResponse.request() != null
-            ? requestResponse.request().body()
-            : requestResponse.response().body();
+    ByteArray bodyValue = requestResponse.request().body();
     String body = bodyValue.toString();
-    log.info("Http response editor has changed: " + body);
-    String output = body;
+    String output;
     try {
-      output = binaryToHuman.convert(body);
+      output = converter.convert(body);
     } catch (UnknownStructException e) {
+      output = e.getMessage();
       log.error(e);
     }
 
