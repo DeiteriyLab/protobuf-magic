@@ -1,6 +1,5 @@
 package protobuf.magic.logger;
 
-import burp.api.montoya.logging.Logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -9,14 +8,14 @@ import java.io.StringWriter;
 // some level work through std output
 public class Logger {
   private static final String PATTERN = "%s [%s]: %s";
-  private static Logging instance;
+  private static ProxyLogger instance = new StdLogger();
   private String name;
 
   public Logger(String name) {
     this.name = name;
   }
 
-  public void setInstance(Logging instance) {
+  public void setInstance(ProxyLogger instance) {
     Logger.instance = instance;
   }
 

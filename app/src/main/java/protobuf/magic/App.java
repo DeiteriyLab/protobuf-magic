@@ -3,12 +3,13 @@ package protobuf.magic;
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import lombok.CustomLog;
+import protobuf.magic.logger.MontoyaLogger;
 
 @CustomLog
 public class App implements BurpExtension {
   @Override
   public void initialize(MontoyaApi api) {
-    log.setInstance(api.logging());
+    log.setInstance(new MontoyaLogger(api.logging()));
 
     api.extension().setName(Config.extensionName());
     log.output("Loaded protobuf magic");
