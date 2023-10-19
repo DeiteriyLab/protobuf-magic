@@ -23,7 +23,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("com.google.guava:guava:31.1-jre")
-    implementation("net.portswigger.burp.extensions:montoya-api:2023.1")
+    implementation("net.portswigger.burp.extensions:montoya-api:2023.2")
     implementation("javax.xml.bind:jaxb-api:2.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.googlecode.protobuf-java-format:protobuf-java-format:1.3")
