@@ -1,6 +1,5 @@
 package protobuf.magic.logger;
 
-
 public class StdLogger implements ProxyLogger {
   @Override
   public void logToError(String message) {
