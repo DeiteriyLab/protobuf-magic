@@ -11,19 +11,26 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.projectlombok:lombok:1.18.30")
+	  annotationProcessor("org.projectlombok:lombok:1.18.30")
+	
+	  testCompileOnly("org.projectlombok:lombok:1.18.30")
+	  testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.4.0")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("com.google.guava:guava:31.1-jre")
-    implementation("net.portswigger.burp.extensions:montoya-api:2023.1")
+    implementation("net.portswigger.burp.extensions:montoya-api:2023.2")
     implementation("javax.xml.bind:jaxb-api:2.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.googlecode.protobuf-java-format:protobuf-java-format:1.3")
     implementation("com.google.protobuf:protobuf-java-util:3.19.4")
     implementation("com.github.os72:protobuf-dynamic:1.0.1")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

@@ -4,18 +4,24 @@ import static burp.api.montoya.http.handler.RequestToBeSentAction.continueWith;
 import static burp.api.montoya.http.handler.ResponseReceivedAction.continueWith;
 
 import burp.api.montoya.MontoyaApi;
-import burp.api.montoya.http.handler.*;
+import burp.api.montoya.http.handler.HttpHandler;
+import burp.api.montoya.http.handler.HttpRequestToBeSent;
+import burp.api.montoya.http.handler.HttpResponseReceived;
+import burp.api.montoya.http.handler.RequestToBeSentAction;
+import burp.api.montoya.http.handler.ResponseReceivedAction;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import java.util.List;
 import java.util.Optional;
-import javax.naming.InsufficientResourcesException;
-import protobuf.magic.protobuf.ProtobufEncoder;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
-import protobuf.magic.struct.Protobuf;
+import lombok.CustomLog;
+import protobuf.magic.adapter.BinaryToHumanReadable;
+import protobuf.magic.adapter.HumanReadableToBinary;
+import protobuf.magic.exception.UnknownStructException;
 
+@CustomLog
 class ProtobufHttpHandler implements HttpHandler {
-  private static final Logger logging = new Logger(ProtobufHttpHandler.class);
+  private static final HumanReadableToBinary humanToBinary = new HumanReadableToBinary();
+  private static final BinaryToHumanReadable binaryToHuman = new BinaryToHumanReadable();
 
   public ProtobufHttpHandler(MontoyaApi api) {}
 
@@ -25,7 +31,13 @@ class ProtobufHttpHandler implements HttpHandler {
       return continueWith(requestToBeSent);
     }
     String body = requestToBeSent.bodyToString();
-    String output = fromHumanToProtobuf(body);
+    log.info("Http handler has changed: " + body);
+    String output = body;
+    try {
+      output = humanToBinary.convert(body);
+    } catch (UnknownStructException e) {
+      log.error(e);
+    }
 
     HttpRequest modifiedRequest = requestToBeSent.withBody(output);
     return continueWith(modifiedRequest);
@@ -50,30 +62,5 @@ class ProtobufHttpHandler implements HttpHandler {
             .findFirst();
 
     return contentTypeHeader.isPresent();
-  }
-
-  private String fromProtobufToHuman(String rawProtobuf) {
-    byte[] bytes = EncodingUtils.parseInput(rawProtobuf);
-    String output;
-    try {
-      var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (InsufficientResourcesException e) {
-      logging.logToError(e);
-      output = "Insufficient resources";
-    }
-    return output;
-  }
-
-  private String fromHumanToProtobuf(String human) {
-    if (!checkHumanFormat(human)) {
-      return human;
-    }
-    Protobuf res = ProtobufHumanConvertor.decodeFromHuman(human);
-    return ProtobufEncoder.encodeToProtobuf(res);
-  }
-
-  private boolean checkHumanFormat(String str) {
-    return str.contains("None:leftOver");
   }
 }

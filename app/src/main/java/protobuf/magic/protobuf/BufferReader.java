@@ -1,10 +1,9 @@
 package protobuf.magic.protobuf;
 
-import java.math.BigInteger;
 import javax.naming.InsufficientResourcesException;
 import protobuf.magic.struct.VarintResult;
 
-class BufferReader {
+public class BufferReader {
   private static final int GRPC_HEADER_FLAG = 0;
   private static final int INT32_BYTE_LENGTH = 4;
   private static final int BYTE_SIZE_BITS = 8;
@@ -19,10 +18,10 @@ class BufferReader {
     this.offset = 0;
   }
 
-  public BigInteger readVarInt() {
+  public Long readVarInt() {
     VarintResult result = VarintUtils.decodeVarint(buffer, offset);
-    offset += result.getLength();
-    return result.getValue();
+    offset += result.length();
+    return result.value();
   }
 
   public byte[] readBuffer(int length) throws InsufficientResourcesException {

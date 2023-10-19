@@ -1,16 +1,16 @@
 package protobuf.magic;
 
-import javax.naming.InsufficientResourcesException;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
+import protobuf.magic.adapter.BinaryToHumanReadable;
+import protobuf.magic.exception.UnknownStructException;
 
 public class InputAreaDocumentListener implements DocumentListener {
-  private static final Logger logging = new Logger(InputAreaDocumentListener.class);
   private final JTextArea inputArea;
   private final JTextArea outputArea;
   private LockActions lockActions = new LockActions();
+  private static final BinaryToHumanReadable converter = new BinaryToHumanReadable();
 
   public InputAreaDocumentListener(JTextArea inputArea, JTextArea outputArea) {
     this.inputArea = inputArea;
@@ -18,25 +18,17 @@ public class InputAreaDocumentListener implements DocumentListener {
   }
 
   @Override
-  public void insertUpdate(DocumentEvent e) {
+  public void insertUpdate(DocumentEvent event) {
     if (lockActions.isLock()) return;
     lockActions.setLock(true);
-    String input = inputArea.getText();
-    byte[] bytes = new byte[0];
-    try {
-      bytes = EncodingUtils.parseInput(input);
-    } catch (StringIndexOutOfBoundsException ex) {
-      logging.logToError(ex);
-    }
     String output;
     try {
-      var protobuf = ProtobufMessageDecoder.decodeProto(bytes);
-      output = ProtobufHumanConvertor.encodeToHuman(protobuf).toString();
-    } catch (InsufficientResourcesException ex) {
-      logging.logToError(ex);
-      output = "Insufficient resources";
+      output = converter.convert(inputArea.getText());
+    } catch (UnknownStructException e) {
+      output = e.getMessage();
     }
     outputArea.setText(output);
+
     lockActions.setLock(false);
   }
 

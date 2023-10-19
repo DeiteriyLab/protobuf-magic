@@ -13,15 +13,17 @@ import burp.api.montoya.ui.editor.extension.EditorMode;
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpResponseEditor;
 import java.awt.Component;
 import java.util.List;
-import javax.naming.InsufficientResourcesException;
-import protobuf.magic.protobuf.ProtobufEncoder;
-import protobuf.magic.protobuf.ProtobufMessageDecoder;
-import protobuf.magic.struct.Protobuf;
+import lombok.CustomLog;
+import protobuf.magic.adapter.BinaryToHumanReadable;
+import protobuf.magic.adapter.HumanReadableToBinary;
+import protobuf.magic.exception.UnknownStructException;
 
+@CustomLog
 class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHttpResponseEditor {
-  private final Logger logging = new Logger(ProtobufExtensionProvidedHttpResponseEditor.class);
   private final RawEditor requestEditor;
   private HttpRequestResponse requestResponse;
+  private static final HumanReadableToBinary humanToBinary = new HumanReadableToBinary();
+  private static final BinaryToHumanReadable binaryToHuman = new BinaryToHumanReadable();
 
   ProtobufExtensionProvidedHttpResponseEditor(
       MontoyaApi api, EditorCreationContext creationContext) {
@@ -38,10 +40,14 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
 
     if (requestEditor.isModified()) {
       String content = requestEditor.getContents().toString();
-      Protobuf payload = ProtobufHumanConvertor.decodeFromHuman(content);
-      String output = ProtobufEncoder.encodeToProtobuf(payload);
+      String output = content;
+      try {
+        output = binaryToHuman.convert(content);
+      } catch (UnknownStructException e) {
+        log.error(e);
+      }
 
-      request = requestResponse.response().withBody(ByteArray.byteArray(output));
+      request = requestResponse.response().withBody(output);
     } else {
       request = requestResponse.response();
     }
@@ -53,16 +59,17 @@ class ProtobufExtensionProvidedHttpResponseEditor implements ExtensionProvidedHt
   public void setRequestResponse(HttpRequestResponse requestResponse) {
     this.requestResponse = requestResponse;
 
-    ByteArray bodyValue = requestResponse.request().body();
+    ByteArray bodyValue =
+        requestResponse.request() != null
+            ? requestResponse.request().body()
+            : requestResponse.response().body();
     String body = bodyValue.toString();
-    String output;
-
+    log.info("Http response editor has changed: " + body);
+    String output = body;
     try {
-      Protobuf payload = ProtobufMessageDecoder.decodeProto(EncodingUtils.parseInput(body));
-      output = ProtobufHumanConvertor.encodeToHuman(payload);
-    } catch (InsufficientResourcesException e) {
-      logging.logToError(e);
-      output = "Insufficient resources";
+      output = binaryToHuman.convert(body);
+    } catch (UnknownStructException e) {
+      log.error(e);
     }
 
     this.requestEditor.setContents(ByteArray.byteArray(output));
