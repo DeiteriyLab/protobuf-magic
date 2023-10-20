@@ -7,6 +7,7 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 - **Protobuf Analysis**: Protobuf Magic can analyze incoming Protobuf messages in Burp Suite's Proxy, Repeater, or Intruder and present them in a human-readable format, even without access to the original .proto files.
 - **Message Modification**: The extension allows you to modify the content of Protobuf messages, making it easy to test different scenarios and edge cases without needing to recompile .proto files.
 - **Message Sending**: Protobuf Magic enables you to send modified Protobuf messages directly from Burp Suite to the target, making it a powerful tool for testing Protobuf-based APIs and applications.
+- **JSON to Protobuf Serialization**: With this feature, users can provide a JSON payload in Intruder, and the addon will attempt to serialize it to Protobuf before sending the request.
 
 ## Installation
 
@@ -21,6 +22,7 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 2. Protobuf Magic will automatically detect and analyze Protobuf messages in the request and response payloads.
 3. In the Proxy and Repeater, you can modify the Protobuf message content before forwarding it to the server.
 4. Use the "Send to Intruder" option to send the Protobuf message to Intruder for further fuzzing or other testing.
+5. **For JSON to Protobuf in Intruder**: Copy your desired JSON payload and paste it into the body request section in Intruder. The addon will attempt to serialize the JSON payload to Protobuf before the request is sent.
 
 <p align="center">
 <img width="800" src=".readme/send.png">
