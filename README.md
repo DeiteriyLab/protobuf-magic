@@ -29,6 +29,10 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 <img width="800" src=".readme/psend.png">
 </p>
 
+
+https://github.com/DeiteriyLab/protobuf-magic/assets/87614587/413cef3d-1ff4-4a65-a87c-3f3c4232b0ff
+
+
 ## Limitations
 
 - Protobuf Magic may not be able to fully interpret complex Protobuf structures without access to the original .proto definitions. As a result, some nested or custom types may not be accurately displayed.
