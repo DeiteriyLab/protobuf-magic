@@ -30,7 +30,7 @@ Protobuf Magic is a powerful Burp Suite extension that aims to analyze, modify, 
 </p>
 
 
-https://github.com/DeiteriyLab/protobuf-magic/assets/87614587/413cef3d-1ff4-4a65-a87c-3f3c4232b0ff
+[![Vimeo](https://i.vimeocdn.com/video/1741116953-29324df5a902222af8d39670b984002e8e4e1fcf0272f9aafaae05b84235301e-d.png)](https://vimeo.com/876247400)
 
 
 ## Limitations
